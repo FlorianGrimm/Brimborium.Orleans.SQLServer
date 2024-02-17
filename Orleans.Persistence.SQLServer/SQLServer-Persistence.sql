@@ -43,7 +43,6 @@
 --
 -- 7. In the storage operations queries the columns need to be in the exact same order
 -- since the storage table operations support optionally streaming.
-IF OBJECT_ID(N'[OrleansStorage]', 'U') IS NULL
 CREATE TABLE OrleansStorage
 (
     -- These are for the book keeping. Orleans calculates
@@ -78,10 +77,7 @@ CREATE TABLE OrleansStorage
     -- rows down to [0, n] relevant ones, n being the number of collided value pairs.
 );
 
-IF NOT EXISTS(SELECT * FROM sys.indexes WHERE name = 'IX_OrleansStorage' AND object_id = OBJECT_ID('OrleansStorage'))
-BEGIN
-	CREATE NONCLUSTERED INDEX IX_OrleansStorage ON OrleansStorage(GrainIdHash, GrainTypeHash);
-END
+CREATE NONCLUSTERED INDEX IX_OrleansStorage ON OrleansStorage(GrainIdHash, GrainTypeHash);
 
 -- This ensures lock escalation will not lock the whole table, which can potentially be enormous.
 -- See more information at https://www.littlekendra.com/2016/02/04/why-rowlock-hints-can-make-queries-slower-and-blocking-worse-in-sql-server/.
@@ -96,7 +92,8 @@ BEGIN
 END
 
 INSERT INTO OrleansQuery(QueryKey, QueryText)
-SELECT
+VALUES
+(
     'WriteToStorageKey',
     '-- When Orleans is running in normal, non-split state, there will
     -- be only one grain with the given ID and type combination only. This
@@ -193,15 +190,11 @@ SELECT
 
     SELECT @NewGrainStateVersion AS NewGrainStateVersion;
     COMMIT TRANSACTION;'
-WHERE NOT EXISTS 
-( 
-    SELECT 1 
-    FROM OrleansQuery oqt
-    WHERE oqt.[QueryKey] = 'WriteToStorageKey'
 );
 
 INSERT INTO OrleansQuery(QueryKey, QueryText)
-SELECT
+VALUES
+(
     'ClearStorageKey',
     'BEGIN TRANSACTION;
     SET XACT_ABORT, NOCOUNT ON;
@@ -225,15 +218,11 @@ SELECT
 
     SELECT @NewGrainStateVersion;
     COMMIT TRANSACTION;'
-WHERE NOT EXISTS 
-( 
-    SELECT 1 
-    FROM OrleansQuery oqt
-    WHERE oqt.[QueryKey] = 'ClearStorageKey'
 );
 
 INSERT INTO OrleansQuery(QueryKey, QueryText)
-SELECT
+VALUES
+(
     'ReadFromStorageKey',
     '-- The application code will deserialize the relevant result. Not that the query optimizer
     -- estimates the result of rows based on its knowledge on the index. It does not know there
@@ -256,9 +245,4 @@ SELECT
         AND ((@GrainIdExtensionString IS NOT NULL AND GrainIdExtensionString IS NOT NULL AND GrainIdExtensionString = @GrainIdExtensionString) OR @GrainIdExtensionString IS NULL AND GrainIdExtensionString IS NULL)
         AND ServiceId = @ServiceId AND @ServiceId IS NOT NULL
         OPTION(FAST 1, OPTIMIZE FOR(@GrainIdHash UNKNOWN, @GrainTypeHash UNKNOWN));'
-WHERE NOT EXISTS 
-( 
-    SELECT 1 
-    FROM OrleansQuery oqt
-    WHERE oqt.[QueryKey] = 'ReadFromStorageKey'
 );

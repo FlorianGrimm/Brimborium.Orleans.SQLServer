@@ -1,24 +1,30 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <PropertyGroup>
-    <PackageId>Microsoft.Orleans.Reminders.AdoNet</PackageId>
-    <Title>Microsoft Orleans ADO.NET Reminders Provider</Title>
-    <Description>Microsoft Orleans reminders provider backed by ADO.NET</Description>
-    <PackageTags>$(PackageTags) ADO.NET SQL MySQL PostgreSQL Oracle</PackageTags>
-    <TargetFrameworks>$(DefaultTargetFrameworks)</TargetFrameworks>
-  </PropertyGroup>
+    <PropertyGroup>
+        <PackageId>Microsoft.Orleans.Reminders.AdoNet</PackageId>
+        <Title>Microsoft Orleans ADO.NET Reminders Provider</Title>
+        <Description>Microsoft Orleans reminders provider backed by ADO.NET</Description>
+        <PackageTags>$(PackageTags) ADO.NET SQL MySQL PostgreSQL Oracle</PackageTags>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
 
-  <PropertyGroup>
-    <AssemblyName>Orleans.Reminders.AdoNet</AssemblyName>
-    <RootNamespace>Orleans.Reminders.AdoNet</RootNamespace>
-    <DefineConstants>$(DefineConstants);REMINDERS_ADONET</DefineConstants>
-  </PropertyGroup>
+    <PropertyGroup>
+        <AssemblyName>Orleans.Reminders.AdoNet</AssemblyName>
+        <RootNamespace>Orleans.Reminders.AdoNet</RootNamespace>
+        <DefineConstants>$(DefineConstants);REMINDERS_ADONET</DefineConstants>
+    </PropertyGroup>
 
-  <ItemGroup>
-    <Compile Include="..\Shared\Storage\*.cs" LinkBase="Storage" />
-  </ItemGroup>
+    <ItemGroup>
+        <Compile Include="..\Shared\Storage\*.cs" LinkBase="Storage" />
+    </ItemGroup>
 
-  <ItemGroup>
-    <ProjectReference Include="$(SourceRoot)src\Orleans.Runtime\Orleans.Runtime.csproj" />
-    <ProjectReference Include="$(SourceRoot)src\Orleans.Reminders\Orleans.Reminders.csproj" />
-  </ItemGroup>
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Orleans.Reminders" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
+    </ItemGroup>
+    <!--
+        <ItemGroup>
+            <ProjectReference Include="$(SourceRoot)src\Orleans.Runtime\Orleans.Runtime.csproj" />
+            <ProjectReference Include="$(SourceRoot)src\Orleans.Reminders\Orleans.Reminders.csproj" />
+        </ItemGroup>
+    -->
 </Project>
