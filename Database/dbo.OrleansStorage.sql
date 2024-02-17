@@ -1,10 +1,3 @@
-USE [Orleans]
-GO
-/****** Object:  Table [dbo].[OrleansStorage]    Script Date: 1/27/2024 5:11:18 PM ******/
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
 CREATE TABLE [dbo].[OrleansStorage](
 	[GrainIdHash] [int] NOT NULL,
 	[GrainIdN0] [bigint] NOT NULL,
