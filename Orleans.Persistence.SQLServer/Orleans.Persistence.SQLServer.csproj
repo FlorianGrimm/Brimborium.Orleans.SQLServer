@@ -1,16 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <PackageId>Microsoft.Orleans.Persistence.AdoNet</PackageId>
-        <Title>Microsoft Orleans ADO.NET Persistence Provider</Title>
-        <Description>Microsoft Orleans persistence providers backed by ADO.NET</Description>
-        <PackageTags>$(PackageTags) ADO.NET SQL MySQL PostgreSQL Oracle</PackageTags>
+        <PackageId>Microsoft.Orleans.Persistence.SqlServer</PackageId>
+        <Title>Microsoft Orleans SqlServer Persistence Provider</Title>
+        <Description>Microsoft Orleans persistence providers backed by SqlServer</Description>
+        <PackageTags>$(PackageTags) SQL Server </PackageTags>
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup>
-        <AssemblyName>Orleans.Persistence.AdoNet</AssemblyName>
-        <RootNamespace>Orleans.Persistence.AdoNet</RootNamespace>
-        <DefineConstants>$(DefineConstants);PERSISTENCE_ADONET</DefineConstants>
+        <AssemblyName>Orleans.Persistence.SqlServer</AssemblyName>
+        <RootNamespace>Orleans.Persistence.SqlServer</RootNamespace>
+        <DefineConstants>$(DefineConstants);PERSISTENCE_SqlServer</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>

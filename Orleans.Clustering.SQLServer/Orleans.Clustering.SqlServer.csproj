@@ -1,16 +1,16 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <PackageId>Microsoft.Orleans.Clustering.AdoNet</PackageId>
-        <Title>Microsoft Orleans ADO.NET Clustering Provider</Title>
-        <Description>Microsoft Orleans clustering provider backed by ADO.NET</Description>
-        <PackageTags>$(PackageTags) ADO.NET SQL MySQL PostgreSQL Oracle</PackageTags>
+        <PackageId>Microsoft.Orleans.Clustering.SqlServer</PackageId>
+        <Title>Microsoft Orleans SqlServer Clustering Provider</Title>
+        <Description>Microsoft Orleans clustering provider backed by SqlServer</Description>
+        <PackageTags>$(PackageTags) SQL Server </PackageTags>
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup>
-        <AssemblyName>Orleans.Clustering.AdoNet</AssemblyName>
-        <RootNamespace>Orleans.Clustering.AdoNet</RootNamespace>
-        <DefineConstants>$(DefineConstants);CLUSTERING_ADONET</DefineConstants>
+        <AssemblyName>Orleans.Clustering.SqlServer</AssemblyName>
+        <RootNamespace>Orleans.Clustering.SqlServer</RootNamespace>
+        <DefineConstants>$(DefineConstants);CLUSTERING_SqlServer</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+      <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
       <PackageReference Include="Microsoft.Orleans.Core" Version="8.0.0" />
       <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="8.0.0" />
       <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />

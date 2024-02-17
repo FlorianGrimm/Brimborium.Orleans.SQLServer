@@ -1,16 +1,16 @@
 <Project Sdk="Microsoft.NET.Sdk">
     <PropertyGroup>
-        <PackageId>Microsoft.Orleans.Reminders.AdoNet</PackageId>
-        <Title>Microsoft Orleans ADO.NET Reminders Provider</Title>
-        <Description>Microsoft Orleans reminders provider backed by ADO.NET</Description>
-        <PackageTags>$(PackageTags) ADO.NET SQL MySQL PostgreSQL Oracle</PackageTags>
+        <PackageId>Microsoft.Orleans.Reminders.SqlServer</PackageId>
+        <Title>Microsoft Orleans SqlServer Reminders Provider</Title>
+        <Description>Microsoft Orleans reminders provider backed by SqlServer</Description>
+        <PackageTags>$(PackageTags) SQL Server </PackageTags>
         <TargetFramework>net8.0</TargetFramework>
     </PropertyGroup>
 
     <PropertyGroup>
-        <AssemblyName>Orleans.Reminders.AdoNet</AssemblyName>
-        <RootNamespace>Orleans.Reminders.AdoNet</RootNamespace>
-        <DefineConstants>$(DefineConstants);REMINDERS_ADONET</DefineConstants>
+        <AssemblyName>Orleans.Reminders.SqlServer</AssemblyName>
+        <RootNamespace>Orleans.Reminders.SqlServer</RootNamespace>
+        <DefineConstants>$(DefineConstants);REMINDERS_SqlServer</DefineConstants>
     </PropertyGroup>
 
     <ItemGroup>
