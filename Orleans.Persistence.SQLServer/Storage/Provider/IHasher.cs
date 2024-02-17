@@ -5,8 +5,7 @@
 /// </summary>
 /// <remarks>Implement this to provide a hasher for database key with specific properties.
 /// As for an example: collision resistance on out-of-control ID providers.</remarks>
-public interface IHasher
-{
+public interface IHasher {
     /// <summary>
     /// Description of the hashing functionality.
     /// </summary>

@@ -50,10 +50,9 @@ internal class RelationalOrleansQueries {
     /// Creates an instance of a database of type <see cref="RelationalOrleansQueries"/> and Initializes Orleans queries from the database. 
     /// Orleans uses only these queries and the variables therein, nothing more.
     /// </summary>
-    /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
-    internal static async Task<RelationalOrleansQueries> CreateInstance(string invariantName, string connectionString) {
-        var storage = RelationalStorage.CreateInstance(invariantName, connectionString);
+    internal static async Task<RelationalOrleansQueries> CreateInstance(string connectionString) {
+        var storage = RelationalStorage.CreateInstance( connectionString);
 
         var queries = await storage.ReadAsync(DbStoredQueries.GetQueriesKey, DbStoredQueries.Converters.GetQueryKeyAndValue, null);
 

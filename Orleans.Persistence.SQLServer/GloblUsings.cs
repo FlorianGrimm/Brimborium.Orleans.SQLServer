@@ -1,5 +1,6 @@
 ﻿global using System;
 global using System.Threading.Tasks;
+global using System.Text;
 
 global using Microsoft.Extensions.DependencyInjection;
 global using Microsoft.Extensions.Logging;

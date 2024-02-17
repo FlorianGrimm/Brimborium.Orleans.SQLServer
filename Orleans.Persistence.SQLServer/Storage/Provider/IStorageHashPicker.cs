@@ -1,15 +1,10 @@
-using Orleans.Runtime;
-using System.Collections.Generic;
-
-
 namespace Orleans.Storage;
 
 /// <summary>
 /// A picker to choose from provided hash functions. Provides agility to update or change hashing functionality for both built-in and custom operations.
 /// </summary>
 /// <remarks>The returned hash needs to be thread safe or a unique instance.</remarks>
-public interface IStorageHasherPicker
-{
+public interface IStorageHasherPicker {
     /// <summary>
     /// The hash functions saved to this picker.
     /// </summary>

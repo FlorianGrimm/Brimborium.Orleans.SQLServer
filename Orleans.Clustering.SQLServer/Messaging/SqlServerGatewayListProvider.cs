@@ -45,7 +45,7 @@ public class SqlServerGatewayListProvider : IGatewayListProvider
     public async Task InitializeGatewayListProvider()
     {
         if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("SqlServerClusteringTable.InitializeGatewayListProvider called.");
-        _orleansQueries = await RelationalOrleansQueries.CreateInstance(_options.Invariant, _options.ConnectionString);
+        _orleansQueries = await RelationalOrleansQueries.CreateInstance(_options.ConnectionString);
     }
 
     public async Task<IList<Uri>> GetGateways()

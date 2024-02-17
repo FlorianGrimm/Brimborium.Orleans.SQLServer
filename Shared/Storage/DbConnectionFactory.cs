@@ -12,21 +12,24 @@ namespace Orleans.Tests.SqlUtils
 
 /// This class caches the references to all loaded factories
 internal static class DbConnectionFactory {
+    [Obsolete]
     private static readonly ConcurrentDictionary<string, CachedFactory> factoryCache =
         new ConcurrentDictionary<string, CachedFactory>();
 
+    [Obsolete]
     private static readonly Dictionary<string, List<Tuple<string, string>>> providerFactoryTypeMap =
         new Dictionary<string, List<Tuple<string, string>>>
         {
-            { SqlServerInvariants.InvariantNameSqlServer, new List<Tuple<string, string>>{ new Tuple<string, string>("System.Data.SqlClient", "System.Data.SqlClient.SqlClientFactory") } },
-            { SqlServerInvariants.InvariantNameMySql, new List<Tuple<string, string>>{ new Tuple<string, string>("MySql.Data", "MySql.Data.MySqlClient.MySqlClientFactory") } },
-            { SqlServerInvariants.InvariantNameOracleDatabase, new List<Tuple<string, string>>{ new Tuple<string, string>("Oracle.ManagedDataAccess", "Oracle.ManagedDataAccess.Client.OracleClientFactory") } },
-            { SqlServerInvariants.InvariantNamePostgreSql, new List<Tuple<string, string>>{ new Tuple<string, string>("Npgsql", "Npgsql.NpgsqlFactory") } },
-            { SqlServerInvariants.InvariantNameSqlLite, new List<Tuple<string, string>>{ new Tuple<string, string>("Microsoft.Data.Sqlite", "Microsoft.Data.Sqlite.SqliteFactory") } },
+            //{ SqlServerInvariants.InvariantNameSqlServer, new List<Tuple<string, string>>{ new Tuple<string, string>("System.Data.SqlClient", "System.Data.SqlClient.SqlClientFactory") } },
+            //{ SqlServerInvariants.InvariantNameMySql, new List<Tuple<string, string>>{ new Tuple<string, string>("MySql.Data", "MySql.Data.MySqlClient.MySqlClientFactory") } },
+            //{ SqlServerInvariants.InvariantNameOracleDatabase, new List<Tuple<string, string>>{ new Tuple<string, string>("Oracle.ManagedDataAccess", "Oracle.ManagedDataAccess.Client.OracleClientFactory") } },
+            //{ SqlServerInvariants.InvariantNamePostgreSql, new List<Tuple<string, string>>{ new Tuple<string, string>("Npgsql", "Npgsql.NpgsqlFactory") } },
+            //{ SqlServerInvariants.InvariantNameSqlLite, new List<Tuple<string, string>>{ new Tuple<string, string>("Microsoft.Data.Sqlite", "Microsoft.Data.Sqlite.SqliteFactory") } },
             { SqlServerInvariants.InvariantNameSqlServerDotnetCore,new List<Tuple<string, string>>{ new Tuple<string, string>("Microsoft.Data.SqlClient", "Microsoft.Data.SqlClient.SqlClientFactory") } },
-            { SqlServerInvariants.InvariantNameMySqlConnector, new List<Tuple<string, string>>{ new Tuple<string, string>("MySqlConnector", "MySqlConnector.MySqlConnectorFactory") , new Tuple<string, string>("MySqlConnector", "MySql.Data.MySqlClient.MySqlClientFactory") } },
+            //{ SqlServerInvariants.InvariantNameMySqlConnector, new List<Tuple<string, string>>{ new Tuple<string, string>("MySqlConnector", "MySqlConnector.MySqlConnectorFactory") , new Tuple<string, string>("MySqlConnector", "MySql.Data.MySqlClient.MySqlClientFactory") } },
         };
 
+    [Obsolete]
     private static CachedFactory GetFactory(string invariantName) {
         if (string.IsNullOrWhiteSpace(invariantName)) {
             throw new ArgumentNullException(nameof(invariantName));
@@ -78,6 +81,7 @@ internal static class DbConnectionFactory {
         }
     }
 
+    [Obsolete]
     public static DbConnection CreateConnection(string invariantName, string connectionString) {
         if (string.IsNullOrWhiteSpace(invariantName)) {
             throw new ArgumentNullException(nameof(invariantName));

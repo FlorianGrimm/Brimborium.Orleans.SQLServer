@@ -18,6 +18,7 @@
     </ItemGroup>
 
     <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
         <PackageReference Include="Microsoft.Orleans.Reminders" Version="8.0.0" />
         <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
     </ItemGroup>

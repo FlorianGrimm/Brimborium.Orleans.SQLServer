@@ -13,4 +13,9 @@ global using System.Threading.Tasks;
 global using System.Net;
 global using System.Globalization;
 
+global using Microsoft.Data.SqlClient;
+
 global using Orleans.Runtime;
+global using Orleans.Configuration.Overrides;
+global using Orleans.Providers;
+global using Orleans.Runtime.Configuration;

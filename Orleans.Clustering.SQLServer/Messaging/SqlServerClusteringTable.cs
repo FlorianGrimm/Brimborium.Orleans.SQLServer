@@ -34,7 +34,6 @@ public class SqlServerClusteringTable : IMembershipTable
         //This initializes all of Orleans operational queries from the database using a well known view
         //and assumes the database with appropriate definitions exists already.
         orleansQueries = await RelationalOrleansQueries.CreateInstance(
-            clusteringTableOptions.Invariant,
             clusteringTableOptions.ConnectionString);
 
         // even if I am not the one who created the table, 

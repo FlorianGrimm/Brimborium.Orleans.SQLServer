@@ -20,31 +20,22 @@ internal class RelationalStorage : IRelationalStorage {
     /// </summary>
     private readonly string _connectionString;
 
-    /// <summary>
-    /// The invariant name of the connector for this database.
-    /// </summary>
-    private readonly string _invariantName;
+    [Obsolete]
+    const string _invariantName = "Microsoft.Data.SqlClient";
 
-    /// <summary>
-    /// If the SqlServer provider of this storage supports cancellation or not. This
-    /// capability is queried and the result is cached here.
-    /// </summary>
-    private readonly bool _supportsCommandCancellation;
+    [Obsolete]
+    const bool _supportsCommandCancellation = true;
 
-    /// <summary>
-    /// If the underlying SqlServer implementation is natively asynchronous
-    /// (the SqlServer Db*.XXXAsync classes are overridden) or not.
-    /// </summary>
-    private readonly bool _isSynchronousSqlServerImplementation;
+    [Obsolete]
+    const bool _isSynchronousSqlServerImplementation=false;
 
-    /// <summary>
-    /// Command interceptor for the given data provider.
-    /// </summary>
+    [Obsolete]
     private readonly ICommandInterceptor _databaseCommandInterceptor;
 
     /// <summary>
     /// The invariant name of the connector for this database.
     /// </summary>
+    [Obsolete]
     public string InvariantName {
         get {
             return _invariantName;
@@ -68,16 +59,12 @@ internal class RelationalStorage : IRelationalStorage {
     /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
     /// <returns></returns>
-    public static IRelationalStorage CreateInstance(string invariantName, string connectionString) {
-        if (string.IsNullOrWhiteSpace(invariantName)) {
-            throw new ArgumentException("The name of invariant must contain characters", nameof(invariantName));
-        }
-
+    public static IRelationalStorage CreateInstance(string connectionString) {
         if (string.IsNullOrWhiteSpace(connectionString)) {
             throw new ArgumentException("Connection string must contain characters", nameof(connectionString));
         }
 
-        return new RelationalStorage(invariantName, connectionString);
+        return new RelationalStorage(connectionString);
     }
 
 
@@ -177,14 +164,10 @@ internal class RelationalStorage : IRelationalStorage {
     /// <summary>
     /// Creates an instance of a database of type <see cref="RelationalStorage"/>.
     /// </summary>
-    /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
-    private RelationalStorage(string invariantName, string connectionString) {
+    private RelationalStorage(string connectionString) {
         this._connectionString = connectionString;
-        this._invariantName = invariantName;
-        _supportsCommandCancellation = DbConstantsStore.SupportsCommandCancellation(InvariantName);
-        _isSynchronousSqlServerImplementation = DbConstantsStore.IsSynchronousSqlServerImplementation(InvariantName);
-        this._databaseCommandInterceptor = DbConstantsStore.GetDatabaseCommandInterceptor(InvariantName);
+        this._databaseCommandInterceptor = NoOpCommandInterceptor.Instance;
     }
 
     private static async Task<Tuple<IEnumerable<TResult>, int>> SelectAsync<TResult>(DbDataReader reader, Func<IDataReader, int, CancellationToken, Task<TResult>> selector, CancellationToken cancellationToken) {
@@ -208,7 +191,7 @@ internal class RelationalStorage : IRelationalStorage {
         using (var reader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(continueOnCapturedContext: false)) {
             CancellationTokenRegistration cancellationRegistration = default;
             try {
-                if (cancellationToken.CanBeCanceled && _supportsCommandCancellation) {
+                if (cancellationToken.CanBeCanceled) {
                     cancellationRegistration = cancellationToken.Register(CommandCancellation, Tuple.Create(reader, command), useSynchronizationContext: false);
                 }
                 return await SelectAsync(reader, selector, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
@@ -226,7 +209,8 @@ internal class RelationalStorage : IRelationalStorage {
         Func<IDataRecord, int, CancellationToken, Task<TResult>> selector,
         CommandBehavior commandBehavior,
         CancellationToken cancellationToken) {
-        using (var connection = DbConnectionFactory.CreateConnection(_invariantName, _connectionString)) {
+        
+        using (var connection = new Microsoft.Data.SqlClient.SqlConnection(_connectionString)) {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             using (var command = connection.CreateCommand()) {
                 parameterProvider?.Invoke(command);

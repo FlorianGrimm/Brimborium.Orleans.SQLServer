@@ -11,5 +11,6 @@ public class SqlServerClusteringClientOptions
     /// <summary>
     /// The invariant name of the connector for gatewayProvider's database.
     /// </summary>
+    [Obsolete]
     public string Invariant { get; set; }
 }

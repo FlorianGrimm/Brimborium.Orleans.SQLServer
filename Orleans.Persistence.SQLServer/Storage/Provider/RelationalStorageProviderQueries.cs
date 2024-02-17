@@ -1,14 +1,10 @@
-﻿using System;
-
-
-namespace Orleans.Storage;
+﻿namespace Orleans.Storage;
 
 /// <summary>
 /// A container class for the queries currently used by the <see cref="SqlServerGrainStorage"/>.
 /// </summary>
 /// <remarks>This is provided as a separate entity in order to make these dynamically updatable.</remarks>
-public class RelationalStorageProviderQueries
-{
+public class RelationalStorageProviderQueries {
     /// <summary>
     /// The clause to write to the storage.
     /// </summary>
@@ -31,20 +27,16 @@ public class RelationalStorageProviderQueries
     /// <param name="writeToStorage">The clause to write to a storage.</param>
     /// <param name="readFromStorage">The clause to read from a storage.</param>
     /// <param name="clearState">The clause to clear the storage.</param>
-    public RelationalStorageProviderQueries(string writeToStorage, string readFromStorage, string clearState)
-    {
-        if(writeToStorage == null)
-        {
+    public RelationalStorageProviderQueries(string writeToStorage, string readFromStorage, string clearState) {
+        if (writeToStorage == null) {
             throw new ArgumentNullException(nameof(writeToStorage));
         }
 
-        if(readFromStorage == null)
-        {
+        if (readFromStorage == null) {
             throw new ArgumentNullException(nameof(readFromStorage));
         }
 
-        if(clearState == null)
-        {
+        if (clearState == null) {
             throw new ArgumentNullException(nameof(clearState));
         }
 
