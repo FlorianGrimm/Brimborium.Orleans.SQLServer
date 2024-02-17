@@ -1,9 +1,3 @@
-using System;
-using System.Data.Common;
-using System.IO;
-using System.Threading;
-using System.Threading.Tasks;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -20,8 +14,7 @@ namespace Orleans.Tests.SqlUtils
 /// This is a chunked read implementation for SqlServer providers which do
 /// not otherwise implement <see cref="DbDataReader.GetStream(int)"/> natively.
 /// </summary>
-public class OrleansRelationalDownloadStream : Stream
-{
+public class OrleansRelationalDownloadStream : Stream {
     /// <summary>
     /// A cached task as if there are multiple rounds of reads, it is likely
     /// the bytes read is the same. This saves one allocation.
@@ -61,8 +54,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// </summary>
     /// <param name="reader">The reader to use to read from the database.</param>
     /// <param name="ordinal">The column ordinal to read from.</param>
-    public OrleansRelationalDownloadStream(DbDataReader reader, int ordinal)
-    {
+    public OrleansRelationalDownloadStream(DbDataReader reader, int ordinal) {
         this.reader = reader;
         this.ordinal = ordinal;
 
@@ -74,8 +66,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// <summary>
     /// Can the stream be read.
     /// </summary>
-    public override bool CanRead
-    {
+    public override bool CanRead {
         get { return ((reader != null) && (!reader.IsClosed)); }
     }
 
@@ -84,8 +75,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// Are seeks supported.
     /// </summary>
     /// <remarks>Returns <em>FALSE</em>.</remarks>
-    public override bool CanSeek
-    {
+    public override bool CanSeek {
         get { return false; }
     }
 
@@ -94,8 +84,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// Can the stream timeout.
     /// </summary>
     /// <remarks>Returns <em>FALSE</em>.</remarks>
-    public override bool CanTimeout
-    {
+    public override bool CanTimeout {
         get { return true; }
     }
 
@@ -104,8 +93,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// Can the stream write.
     /// </summary>
     /// <remarks>Returns <em>FALSE</em>.</remarks>
-    public override bool CanWrite
-    {
+    public override bool CanWrite {
         get { return false; }
     }
 
@@ -113,8 +101,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// <summary>
     /// The length of the stream.
     /// </summary>
-    public override long Length
-    {
+    public override long Length {
         get { return totalBytes; }
     }
 
@@ -122,8 +109,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// <summary>
     /// The current position in the stream.
     /// </summary>
-    public override long Position
-    {
+    public override long Position {
         get { return position; }
         set { throw new NotSupportedException(); }
     }
@@ -133,8 +119,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// Throws <exception cref="NotSupportedException"/>.
     /// </summary>
     /// <exception cref="NotSupportedException" />.
-    public override void Flush()
-    {
+    public override void Flush() {
         throw new NotSupportedException();
     }
 
@@ -146,25 +131,20 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="offset">The offset to the buffer to stat reading.</param>
     /// <param name="count">The count of bytes to read to.</param>
     /// <returns>The number of actual bytes read from the stream.</returns>
-    public override int Read(byte[] buffer, int offset, int count)
-    {
+    public override int Read(byte[] buffer, int offset, int count) {
         //This will throw with the same parameter names if the parameters are not valid.
         ValidateReadParameters(buffer, offset, count);
 
-        try
-        {
+        try {
             int length = Math.Min(count, (int)(totalBytes - position));
             long bytesRead = 0;
-            if(length > 0)
-            {
+            if (length > 0) {
                 bytesRead = reader.GetBytes(ordinal, position, buffer, offset, length);
                 position += bytesRead;
             }
 
             return (int)bytesRead;
-        }
-        catch(DbException dex)
-        {
+        } catch (DbException dex) {
             //It's not OK to throw non-IOExceptions from a Stream.
             throw new IOException(dex.Message, dex);
         }
@@ -179,29 +159,24 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="count">The count of bytes to read to.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <returns>The number of actual bytes read from the stream.</returns>
-    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken)
-    {
+    public override Task<int> ReadAsync(byte[] buffer, int offset, int count, CancellationToken cancellationToken) {
         //This will throw with the same parameter names if the parameters are not valid.
         ValidateReadParameters(buffer, offset, count);
 
-        if(cancellationToken.IsCancellationRequested)
-        {
+        if (cancellationToken.IsCancellationRequested) {
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             tcs.SetCanceled();
             return tcs.Task;
         }
 
-        try
-        {
+        try {
             //The last used task is saved in order to avoid one allocation when the number of bytes read
             //will likely be the same multiple times.
             int bytesRead = Read(buffer, offset, count);
             var ret = lastTask != null && bytesRead == lastTask.Result ? lastTask : (lastTask = Task.FromResult(bytesRead));
 
             return ret;
-        }
-        catch(Exception e)
-        {
+        } catch (Exception e) {
             //Due to call to Read, this is for sure a IOException and can be thrown out.
             var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
             tcs.SetException(e);
@@ -218,16 +193,12 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="bufferSize">The buffer size.</param>
     /// <param name="cancellationToken">The cancellation token.</param>
     /// <remarks>Reading from the underlying SqlServer provider is currently synchro</remarks>
-    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken)
-    {
-        if(!cancellationToken.IsCancellationRequested)
-        {
+    public override async Task CopyToAsync(Stream destination, int bufferSize, CancellationToken cancellationToken) {
+        if (!cancellationToken.IsCancellationRequested) {
             byte[] buffer = new byte[InternalReadBufferLength];
             int bytesRead;
-            while((bytesRead = Read(buffer, 0, buffer.Length)) > 0)
-            {
-                if(cancellationToken.IsCancellationRequested)
-                {
+            while ((bytesRead = Read(buffer, 0, buffer.Length)) > 0) {
+                if (cancellationToken.IsCancellationRequested) {
                     break;
                 }
 
@@ -244,8 +215,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="origin">The origin.</param>
     /// <returns>Throws <exception cref="NotSupportedException"/>.</returns>
     /// <exception cref="NotSupportedException" />.
-    public override long Seek(long offset, SeekOrigin origin)
-    {
+    public override long Seek(long offset, SeekOrigin origin) {
         throw new NotSupportedException();
     }
 
@@ -255,8 +225,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// </summary>
     /// <returns>Throws <exception cref="NotSupportedException"/>.</returns>
     /// <exception cref="NotSupportedException" />.
-    public override void SetLength(long value)
-    {
+    public override void SetLength(long value) {
         throw new NotSupportedException();
     }
 
@@ -267,8 +236,7 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="buffer">The buffer.</param>
     /// <param name="offset">The offset to the buffer.</param>
     /// <param name="count">The count of bytes to read.</param>
-    public override void Write(byte[] buffer, int offset, int count)
-    {
+    public override void Write(byte[] buffer, int offset, int count) {
         throw new NotSupportedException();
     }
 
@@ -277,10 +245,8 @@ public class OrleansRelationalDownloadStream : Stream
     /// Dispose.
     /// </summary>
     /// <param name="disposing">Whether is disposing or not.</param>
-    protected override void Dispose(bool disposing)
-    {
-        if(disposing)
-        {
+    protected override void Dispose(bool disposing) {
+        if (disposing) {
             reader = null;
         }
 
@@ -294,29 +260,21 @@ public class OrleansRelationalDownloadStream : Stream
     /// <param name="buffer"></param>
     /// <param name="offset"></param>
     /// <param name="count"></param>
-    private static void ValidateReadParameters(byte[] buffer, int offset, int count)
-    {
-        if(buffer == null)
-        {
+    private static void ValidateReadParameters(byte[] buffer, int offset, int count) {
+        if (buffer == null) {
             throw new ArgumentNullException(nameof(buffer));
         }
-        if(offset < 0)
-        {
+        if (offset < 0) {
             throw new ArgumentOutOfRangeException(nameof(offset));
         }
-        if(count < 0)
-        {
+        if (count < 0) {
             throw new ArgumentOutOfRangeException(nameof(count));
         }
-        try
-        {
-            if(checked(offset + count) > buffer.Length)
-            {
+        try {
+            if (checked(offset + count) > buffer.Length) {
                 throw new ArgumentException("Invalid offset length");
             }
-        }
-        catch(OverflowException)
-        {
+        } catch (OverflowException) {
             throw new ArgumentException("Invalid offset length");
         }
     }

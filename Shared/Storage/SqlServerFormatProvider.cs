@@ -1,6 +1,3 @@
-using System;
-using System.Globalization;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer

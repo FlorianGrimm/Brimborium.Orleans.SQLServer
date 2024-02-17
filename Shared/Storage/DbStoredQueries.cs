@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Net;
-using System.Reflection;
-using Orleans.Runtime;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif ORLEANS_REMINDERS_PROVIDER
@@ -25,17 +17,14 @@ namespace Orleans.Tests.SqlUtils
 /// This class implements the expected contract between Orleans and the underlying relational storage.
 /// It makes sure all the stored queries are present and 
 /// </summary>
-internal class DbStoredQueries
-{
+internal class DbStoredQueries {
     private readonly Dictionary<string, string> queries;
 
-    internal DbStoredQueries(Dictionary<string, string> queries)
-    {
+    internal DbStoredQueries(Dictionary<string, string> queries) {
         var fields = typeof(DbStoredQueries).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
             .Select(p => p.Name);
         var missingQueryKeys = fields.Except(queries.Keys).ToArray();
-        if (missingQueryKeys.Length > 0)
-        {
+        if (missingQueryKeys.Length > 0) {
             throw new ArgumentException(
                 $"Not all required queries found. Missing are: {string.Join(",", missingQueryKeys)}");
         }
@@ -136,24 +125,19 @@ internal class DbStoredQueries
 
 #endif
 
-    internal static class Converters
-    {
-        internal static KeyValuePair<string, string> GetQueryKeyAndValue(IDataRecord record)
-        {
+    internal static class Converters {
+        internal static KeyValuePair<string, string> GetQueryKeyAndValue(IDataRecord record) {
             return new KeyValuePair<string, string>(record.GetValue<string>("QueryKey"),
                 record.GetValue<string>("QueryText"));
         }
 
 
-        internal static Tuple<MembershipEntry, int> GetMembershipEntry(IDataRecord record)
-        {
+        internal static Tuple<MembershipEntry, int> GetMembershipEntry(IDataRecord record) {
             //TODO: This is a bit of hack way to check in the current version if there's membership data or not, but if there's a start time, there's member.            
             DateTime? startTime = record.GetDateTimeValueOrDefault(nameof(Columns.StartTime));
             MembershipEntry entry = null;
-            if (startTime.HasValue)
-            {
-                entry = new MembershipEntry
-                {
+            if (startTime.HasValue) {
+                entry = new MembershipEntry {
                     SiloAddress = GetSiloAddress(record, nameof(Columns.Port)),
                     SiloName = TryGetSiloName(record),
                     HostName = record.GetValue<string>(nameof(Columns.HostName)),
@@ -164,11 +148,9 @@ internal class DbStoredQueries
                 };
 
                 string suspectingSilos = record.GetValueOrDefault<string>(nameof(Columns.SuspectTimes));
-                if (!string.IsNullOrWhiteSpace(suspectingSilos))
-                {
+                if (!string.IsNullOrWhiteSpace(suspectingSilos)) {
                     entry.SuspectTimes = new List<Tuple<SiloAddress, DateTime>>();
-                    entry.SuspectTimes.AddRange(suspectingSilos.Split('|').Select(s =>
-                    {
+                    entry.SuspectTimes.AddRange(suspectingSilos.Split('|').Select(s => {
                         var split = s.Split(',');
                         return new Tuple<SiloAddress, DateTime>(SiloAddress.FromParsableString(split[0]),
                             LogFormatter.ParseDate(split[1]));
@@ -183,15 +165,11 @@ internal class DbStoredQueries
         /// This method is for compatibility with membership tables that
         /// do not contain a SiloName field
         /// </summary>
-        private static string TryGetSiloName(IDataRecord record)
-        {
+        private static string TryGetSiloName(IDataRecord record) {
             int pos;
-            try
-            {
+            try {
                 pos = record.GetOrdinal(nameof(Columns.SiloName));
-            }
-            catch (IndexOutOfRangeException)
-            {
+            } catch (IndexOutOfRangeException) {
                 return null;
             }
 
@@ -199,18 +177,15 @@ internal class DbStoredQueries
 
         }
 
-        internal static int GetVersion(IDataRecord record)
-        {
+        internal static int GetVersion(IDataRecord record) {
             return Convert.ToInt32(record.GetValue<object>(nameof(Version)));
         }
 
-        internal static Uri GetGatewayUri(IDataRecord record)
-        {
+        internal static Uri GetGatewayUri(IDataRecord record) {
             return GetSiloAddress(record, nameof(Columns.ProxyPort)).ToGatewayUri();
         }
 
-        private static SiloAddress GetSiloAddress(IDataRecord record, string portName)
-        {
+        private static SiloAddress GetSiloAddress(IDataRecord record, string portName) {
             //Use the GetInt32 method instead of the generic GetValue<TValue> version to retrieve the value from the data record
             //GetValue<int> causes an InvalidCastException with orcale data provider. See https://github.com/dotnet/orleans/issues/3561
             int port = record.GetInt32(portName);
@@ -220,65 +195,53 @@ internal class DbStoredQueries
             return siloAddress;
         }
 
-        internal static bool GetSingleBooleanValue(IDataRecord record)
-        {
+        internal static bool GetSingleBooleanValue(IDataRecord record) {
             if (record.FieldCount != 1) throw new InvalidOperationException("Expected a single column");
             return Convert.ToBoolean(record.GetValue(0));
         }
     }
 
-    internal class Columns
-    {
+    internal class Columns {
         private readonly IDbCommand command;
 
-        internal Columns(IDbCommand cmd)
-        {
+        internal Columns(IDbCommand cmd) {
             command = cmd;
 
         }
 
-        private void Add<T>(string paramName, T paramValue, DbType? dbType = null)
-        {
+        private void Add<T>(string paramName, T paramValue, DbType? dbType = null) {
             command.AddParameter(paramName, paramValue, dbType: dbType);
         }
-        
-        private void AddAddress(string name, IPAddress address)
-        {
+
+        private void AddAddress(string name, IPAddress address) {
             Add(name, address.ToString(), dbType: DbType.AnsiString);
         }
 
-        private void AddGrainHash(string name, uint grainHash)
-        {
+        private void AddGrainHash(string name, uint grainHash) {
             Add(name, (int)grainHash);
         }
 
-        internal string ClientId
-        {
+        internal string ClientId {
             set { Add(nameof(ClientId), value); }
         }
 
-        internal int GatewayPort
-        {
+        internal int GatewayPort {
             set { Add(nameof(GatewayPort), value); }
         }
 
-        internal IPAddress GatewayAddress
-        {
+        internal IPAddress GatewayAddress {
             set { AddAddress(nameof(GatewayAddress), value); }
         }
 
-        internal string SiloId
-        {
+        internal string SiloId {
             set { Add(nameof(SiloId), value); }
         }
 
-        internal string Id
-        {
+        internal string Id {
             set { Add(nameof(Id), value); }
         }
 
-        internal string Name
-        {
+        internal string Name {
             set { Add(nameof(Name), value); }
         }
 
@@ -286,120 +249,95 @@ internal class DbStoredQueries
         internal const string StatValue = nameof(StatValue);
         internal const string Statistic = nameof(Statistic);
 
-        internal SiloAddress SiloAddress
-        {
-            set
-            {
+        internal SiloAddress SiloAddress {
+            set {
                 Address = value.Endpoint.Address;
                 Port = value.Endpoint.Port;
                 Generation = value.Generation;
             }
         }
 
-        internal int Generation
-        {
+        internal int Generation {
             set { Add(nameof(Generation), value); }
         }
 
-        internal int Port
-        {
+        internal int Port {
             set { Add(nameof(Port), value); }
         }
 
-        internal uint BeginHash
-        {
+        internal uint BeginHash {
             set { AddGrainHash(nameof(BeginHash), value); }
         }
 
-        internal uint EndHash
-        {
+        internal uint EndHash {
             set { AddGrainHash(nameof(EndHash), value); }
         }
 
-        internal uint GrainHash
-        {
+        internal uint GrainHash {
             set { AddGrainHash(nameof(GrainHash), value); }
         }
 
-        internal DateTime StartTime
-        {
+        internal DateTime StartTime {
             set { Add(nameof(StartTime), value); }
         }
 
-        internal IPAddress Address
-        {
+        internal IPAddress Address {
             set { AddAddress(nameof(Address), value); }
         }
 
-        internal string ServiceId
-        {
+        internal string ServiceId {
             set { Add(nameof(ServiceId), value); }
         }
 
-        internal string DeploymentId
-        {
+        internal string DeploymentId {
             set { Add(nameof(DeploymentId), value); }
         }
 
-        internal string SiloName
-        {
+        internal string SiloName {
             set { Add(nameof(SiloName), value); }
         }
 
-        internal string HostName
-        {
+        internal string HostName {
             set { Add(nameof(HostName), value); }
         }
 
-        internal string Version
-        {
+        internal string Version {
             set { Add(nameof(Version), int.Parse(value)); }
         }
 
-        internal DateTime IAmAliveTime
-        {
+        internal DateTime IAmAliveTime {
             set { Add(nameof(IAmAliveTime), value); }
         }
 
-        internal string GrainId
-        {
+        internal string GrainId {
             set { Add(nameof(GrainId), value, dbType: DbType.AnsiString); }
         }
 
-        internal string ReminderName
-        {
+        internal string ReminderName {
             set { Add(nameof(ReminderName), value); }
         }
 
-        internal TimeSpan Period
-        {
+        internal TimeSpan Period {
             set {
-                if (value.TotalMilliseconds <= int.MaxValue)
-                {
+                if (value.TotalMilliseconds <= int.MaxValue) {
                     // Original casting when old schema is used.  Here to maintain backwards compatibility
                     Add(nameof(Period), (int)value.TotalMilliseconds);
-                }
-                else
-                {
+                } else {
                     Add(nameof(Period), (long)value.TotalMilliseconds);
                 }
             }
         }
 
-        internal SiloStatus Status
-        {
+        internal SiloStatus Status {
             set { Add(nameof(Status), (int)value); }
         }
 
-        internal int ProxyPort
-        {
+        internal int ProxyPort {
             set { Add(nameof(ProxyPort), value); }
         }
 
-        internal List<Tuple<SiloAddress, DateTime>> SuspectTimes
-        {
-            set
-            {
+        internal List<Tuple<SiloAddress, DateTime>> SuspectTimes {
+            set {
                 Add(nameof(SuspectTimes), value == null
                     ? null
                     : string.Join("|", value.Select(

@@ -1,12 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.Diagnostics;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -23,8 +14,7 @@ namespace Orleans.Tests.SqlUtils
 /// A general purpose class to work with a given relational database and SqlServer provider.
 /// </summary>
 [DebuggerDisplay("InvariantName = {InvariantName}, ConnectionString = {ConnectionString}")]
-internal class RelationalStorage : IRelationalStorage
-{
+internal class RelationalStorage : IRelationalStorage {
     /// <summary>
     /// The connection string to use.
     /// </summary>
@@ -55,10 +45,8 @@ internal class RelationalStorage : IRelationalStorage
     /// <summary>
     /// The invariant name of the connector for this database.
     /// </summary>
-    public string InvariantName
-    {
-        get
-        {
+    public string InvariantName {
+        get {
             return _invariantName;
         }
     }
@@ -67,10 +55,8 @@ internal class RelationalStorage : IRelationalStorage
     /// <summary>
     /// The connection string used to connect to the database.
     /// </summary>
-    public string ConnectionString
-    {
-        get
-        {
+    public string ConnectionString {
+        get {
             return _connectionString;
         }
     }
@@ -82,15 +68,12 @@ internal class RelationalStorage : IRelationalStorage
     /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
     /// <returns></returns>
-    public static IRelationalStorage CreateInstance(string invariantName, string connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(invariantName))
-        {
+    public static IRelationalStorage CreateInstance(string invariantName, string connectionString) {
+        if (string.IsNullOrWhiteSpace(invariantName)) {
             throw new ArgumentException("The name of invariant must contain characters", nameof(invariantName));
         }
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
+        if (string.IsNullOrWhiteSpace(connectionString)) {
             throw new ArgumentException("Connection string must contain characters", nameof(connectionString));
         }
 
@@ -147,16 +130,13 @@ internal class RelationalStorage : IRelationalStorage
     ///}).ConfigureAwait(continueOnCapturedContext: false);
     /// </code>
     /// </example>
-    public async Task<IEnumerable<TResult>> ReadAsync<TResult>(string query, Action<IDbCommand> parameterProvider, Func<IDataRecord, int, CancellationToken, Task<TResult>> selector, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default)
-    {
+    public async Task<IEnumerable<TResult>> ReadAsync<TResult>(string query, Action<IDbCommand> parameterProvider, Func<IDataRecord, int, CancellationToken, Task<TResult>> selector, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default) {
         //If the query is something else that is not acceptable (e.g. an empty string), there will an appropriate database exception.
-        if (query == null)
-        {
+        if (query == null) {
             throw new ArgumentNullException(nameof(query));
         }
 
-        if (selector == null)
-        {
+        if (selector == null) {
             throw new ArgumentNullException(nameof(selector));
         }
 
@@ -185,11 +165,9 @@ internal class RelationalStorage : IRelationalStorage
     /// }).ConfigureAwait(continueOnCapturedContext: false);
     /// </code>
     /// </example>
-    public async Task<int> ExecuteAsync(string query, Action<IDbCommand> parameterProvider, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default)
-    {
+    public async Task<int> ExecuteAsync(string query, Action<IDbCommand> parameterProvider, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default) {
         //If the query is something else that is not acceptable (e.g. an empty string), there will an appropriate database exception.
-        if (query == null)
-        {
+        if (query == null) {
             throw new ArgumentNullException(nameof(query));
         }
 
@@ -201,8 +179,7 @@ internal class RelationalStorage : IRelationalStorage
     /// </summary>
     /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
-    private RelationalStorage(string invariantName, string connectionString)
-    {
+    private RelationalStorage(string invariantName, string connectionString) {
         this._connectionString = connectionString;
         this._invariantName = invariantName;
         _supportsCommandCancellation = DbConstantsStore.SupportsCommandCancellation(InvariantName);
@@ -210,14 +187,11 @@ internal class RelationalStorage : IRelationalStorage
         this._databaseCommandInterceptor = DbConstantsStore.GetDatabaseCommandInterceptor(InvariantName);
     }
 
-    private static async Task<Tuple<IEnumerable<TResult>, int>> SelectAsync<TResult>(DbDataReader reader, Func<IDataReader, int, CancellationToken, Task<TResult>> selector, CancellationToken cancellationToken)
-    {
+    private static async Task<Tuple<IEnumerable<TResult>, int>> SelectAsync<TResult>(DbDataReader reader, Func<IDataReader, int, CancellationToken, Task<TResult>> selector, CancellationToken cancellationToken) {
         var results = new List<TResult>();
         int resultSetCount = 0;
-        while (reader.HasRows)
-        {
-            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false))
-            {
+        while (reader.HasRows) {
+            while (await reader.ReadAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false)) {
                 var obj = await selector(reader, resultSetCount, cancellationToken).ConfigureAwait(false);
                 results.Add(obj);
             }
@@ -230,21 +204,15 @@ internal class RelationalStorage : IRelationalStorage
     }
 
 
-    private async Task<Tuple<IEnumerable<TResult>, int>> ExecuteReaderAsync<TResult>(DbCommand command, Func<IDataRecord, int, CancellationToken, Task<TResult>> selector, CommandBehavior commandBehavior, CancellationToken cancellationToken)
-    {
-        using (var reader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(continueOnCapturedContext: false))
-        {
+    private async Task<Tuple<IEnumerable<TResult>, int>> ExecuteReaderAsync<TResult>(DbCommand command, Func<IDataRecord, int, CancellationToken, Task<TResult>> selector, CommandBehavior commandBehavior, CancellationToken cancellationToken) {
+        using (var reader = await command.ExecuteReaderAsync(commandBehavior, cancellationToken).ConfigureAwait(continueOnCapturedContext: false)) {
             CancellationTokenRegistration cancellationRegistration = default;
-            try
-            {
-                if (cancellationToken.CanBeCanceled && _supportsCommandCancellation)
-                {
+            try {
+                if (cancellationToken.CanBeCanceled && _supportsCommandCancellation) {
                     cancellationRegistration = cancellationToken.Register(CommandCancellation, Tuple.Create(reader, command), useSynchronizationContext: false);
                 }
                 return await SelectAsync(reader, selector, cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            }
-            finally
-            {
+            } finally {
                 cancellationRegistration.Dispose();
             }
         }
@@ -257,25 +225,19 @@ internal class RelationalStorage : IRelationalStorage
         Func<DbCommand, Func<IDataRecord, int, CancellationToken, Task<TResult>>, CommandBehavior, CancellationToken, Task<Tuple<IEnumerable<TResult>, int>>> executor,
         Func<IDataRecord, int, CancellationToken, Task<TResult>> selector,
         CommandBehavior commandBehavior,
-        CancellationToken cancellationToken)
-    {
-        using (var connection = DbConnectionFactory.CreateConnection(_invariantName, _connectionString))
-        {
+        CancellationToken cancellationToken) {
+        using (var connection = DbConnectionFactory.CreateConnection(_invariantName, _connectionString)) {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
-            using (var command = connection.CreateCommand())
-            {
+            using (var command = connection.CreateCommand()) {
                 parameterProvider?.Invoke(command);
                 command.CommandText = query;
 
                 _databaseCommandInterceptor.Intercept(command);
 
                 Task<Tuple<IEnumerable<TResult>, int>> ret;
-                if (_isSynchronousSqlServerImplementation)
-                {
+                if (_isSynchronousSqlServerImplementation) {
                     ret = Task.Run(() => executor(command, selector, commandBehavior, cancellationToken), cancellationToken);
-                }
-                else
-                {
+                } else {
                     ret = executor(command, selector, commandBehavior, cancellationToken);
                 }
 
@@ -285,15 +247,13 @@ internal class RelationalStorage : IRelationalStorage
     }
 
 
-    private static void CommandCancellation(object state)
-    {
+    private static void CommandCancellation(object state) {
         //The MSDN documentation tells that DbCommand.Cancel() should not be called for SqlCommand if the reader has been closed
         //in order to avoid a race condition that would cause the SQL Server to stream the result set
         //despite the connection already closed. Source: https://msdn.microsoft.com/en-us/library/system.data.sqlclient.sqlcommand.cancel(v=vs.110).aspx.
         //Enforcing this behavior across all providers does not seem to hurt.
         var stateTuple = (Tuple<DbDataReader, DbCommand>)state;
-        if (!stateTuple.Item1.IsClosed)
-        {
+        if (!stateTuple.Item1.IsClosed) {
             stateTuple.Item2.Cancel();
         }
     }

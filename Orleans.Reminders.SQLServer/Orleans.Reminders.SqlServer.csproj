@@ -18,6 +18,10 @@
     </ItemGroup>
 
     <ItemGroup>
+      <Compile Remove="..\Shared\Storage\OracleDatabaseCommandInterceptor.cs" />
+    </ItemGroup>
+
+    <ItemGroup>
         <PackageReference Include="Microsoft.Orleans.Reminders" Version="8.0.0" />
         <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
     </ItemGroup>

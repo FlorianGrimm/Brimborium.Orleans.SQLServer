@@ -1,6 +1,4 @@
-﻿using System.Data;
-
-#if CLUSTERING_SqlServer
+﻿#if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
 namespace Orleans.Persistence.SqlServer.Storage;
@@ -12,7 +10,6 @@ namespace Orleans.Tests.SqlUtils
 // No default namespace intentionally to cause compile errors if something is not defined
 #endif
 
-internal interface ICommandInterceptor
-{
+internal interface ICommandInterceptor {
     void Intercept(IDbCommand command);
 }

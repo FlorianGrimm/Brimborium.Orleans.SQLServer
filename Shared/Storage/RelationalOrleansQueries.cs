@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Linq;
-using System.Threading.Tasks;
-
-using Orleans.Runtime;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -23,8 +15,7 @@ namespace Orleans.Tests.SqlUtils
 /// <summary>
 /// A class for all relational storages that support all systems stores : membership, reminders and statistics
 /// </summary>    
-internal class RelationalOrleansQueries
-{
+internal class RelationalOrleansQueries {
     /// <summary>
     /// the underlying storage
     /// </summary>
@@ -40,18 +31,17 @@ internal class RelationalOrleansQueries
         DbStoredQueries.Columns.Statistic
     };
 
-/// <summary>
-/// the orleans functional queries
-/// </summary>
-private readonly DbStoredQueries dbStoredQueries;
+    /// <summary>
+    /// the orleans functional queries
+    /// </summary>
+    private readonly DbStoredQueries dbStoredQueries;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="storage">the underlying relational storage</param>
     /// <param name="dbStoredQueries">Orleans functional queries</param>
-    private RelationalOrleansQueries(IRelationalStorage storage, DbStoredQueries dbStoredQueries)
-    {
+    private RelationalOrleansQueries(IRelationalStorage storage, DbStoredQueries dbStoredQueries) {
         this.storage = storage;
         this.dbStoredQueries = dbStoredQueries;
     }
@@ -62,8 +52,7 @@ private readonly DbStoredQueries dbStoredQueries;
     /// </summary>
     /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
-    internal static async Task<RelationalOrleansQueries> CreateInstance(string invariantName, string connectionString)
-    {
+    internal static async Task<RelationalOrleansQueries> CreateInstance(string invariantName, string connectionString) {
         var storage = RelationalStorage.CreateInstance(invariantName, connectionString);
 
         var queries = await storage.ReadAsync(DbStoredQueries.GetQueriesKey, DbStoredQueries.Converters.GetQueryKeyAndValue, null);
@@ -71,16 +60,14 @@ private readonly DbStoredQueries dbStoredQueries;
         return new RelationalOrleansQueries(storage, new DbStoredQueries(queries.ToDictionary(q => q.Key, q => q.Value)));
     }
 
-    private Task ExecuteAsync(string query, Func<IDbCommand, DbStoredQueries.Columns> parameterProvider)
-    {
+    private Task ExecuteAsync(string query, Func<IDbCommand, DbStoredQueries.Columns> parameterProvider) {
         return storage.ExecuteAsync(query, command => parameterProvider(command));
     }
 
     private async Task<TAggregate> ReadAsync<TResult, TAggregate>(string query,
         Func<IDataRecord, TResult> selector,
         Func<IDbCommand, DbStoredQueries.Columns> parameterProvider,
-        Func<IEnumerable<TResult>, TAggregate> aggregator)
-    {
+        Func<IEnumerable<TResult>, TAggregate> aggregator) {
         var ret = await storage.ReadAsync(query, selector, command => parameterProvider(command));
         return aggregator(ret);
     }
@@ -93,8 +80,7 @@ private readonly DbStoredQueries dbStoredQueries;
     /// <param name="serviceId">The service ID.</param>
     /// <param name="grainId">The grain reference (ID).</param>
     /// <returns>Reminder table data.</returns>
-    internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, GrainId grainId)
-    {
+    internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, GrainId grainId) {
         return ReadAsync(dbStoredQueries.ReadReminderRowsKey, GetReminderEntry, command =>
             new DbStoredQueries.Columns(command) { ServiceId = serviceId, GrainId = grainId.ToString() },
             ret => new ReminderTableData(ret.ToList()));
@@ -108,8 +94,7 @@ private readonly DbStoredQueries dbStoredQueries;
     /// <param name="beginHash">The begin hash.</param>
     /// <param name="endHash">The end hash.</param>
     /// <returns>Reminder table data.</returns>
-    internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, uint beginHash, uint endHash)
-    {
+    internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, uint beginHash, uint endHash) {
         var query = (int)beginHash < (int)endHash ? dbStoredQueries.ReadRangeRows1Key : dbStoredQueries.ReadRangeRows2Key;
 
         return ReadAsync(query, GetReminderEntry, command =>
@@ -118,20 +103,16 @@ private readonly DbStoredQueries dbStoredQueries;
     }
 
 
-    internal static KeyValuePair<string, string> GetQueryKeyAndValue(IDataRecord record)
-    {
+    internal static KeyValuePair<string, string> GetQueryKeyAndValue(IDataRecord record) {
         return new KeyValuePair<string, string>(record.GetValue<string>("QueryKey"),
             record.GetValue<string>("QueryText"));
     }
 
-    internal static ReminderEntry GetReminderEntry(IDataRecord record)
-    {
+    internal static ReminderEntry GetReminderEntry(IDataRecord record) {
         //Having non-null field, GrainId, means with the query filter options, an entry was found.
         string grainId = record.GetValueOrDefault<string>(nameof(DbStoredQueries.Columns.GrainId));
-        if (grainId != null)
-        {
-            return new ReminderEntry
-            {
+        if (grainId != null) {
+            return new ReminderEntry {
                 GrainId = GrainId.Parse(grainId),
                 ReminderName = record.GetValue<string>(nameof(DbStoredQueries.Columns.ReminderName)),
                 StartAt = record.GetDateTimeValue(nameof(DbStoredQueries.Columns.StartTime)),
@@ -152,11 +133,9 @@ private readonly DbStoredQueries dbStoredQueries;
     /// <param name="reminderName">The reminder name to retrieve.</param>
     /// <returns>A remainder entry.</returns>
     internal Task<ReminderEntry> ReadReminderRowAsync(string serviceId, GrainId grainId,
-        string reminderName)
-    {
+        string reminderName) {
         return ReadAsync(dbStoredQueries.ReadReminderRowKey, GetReminderEntry, command =>
-            new DbStoredQueries.Columns(command)
-            {
+            new DbStoredQueries.Columns(command) {
                 ServiceId = serviceId,
                 GrainId = grainId.ToString(),
                 ReminderName = reminderName
@@ -173,11 +152,9 @@ private readonly DbStoredQueries dbStoredQueries;
     /// <param name="period">Period of the reminder.</param>
     /// <returns>The new etag of the either or updated or inserted reminder row.</returns>
     internal Task<string> UpsertReminderRowAsync(string serviceId, GrainId grainId,
-        string reminderName, DateTime startTime, TimeSpan period)
-    {
+        string reminderName, DateTime startTime, TimeSpan period) {
         return ReadAsync(dbStoredQueries.UpsertReminderRowKey, DbStoredQueries.Converters.GetVersion, command =>
-            new DbStoredQueries.Columns(command)
-            {
+            new DbStoredQueries.Columns(command) {
                 ServiceId = serviceId,
                 GrainHash = grainId.GetUniformHashCode(),
                 GrainId = grainId.ToString(),
@@ -196,11 +173,9 @@ private readonly DbStoredQueries dbStoredQueries;
     /// <param name="etag"></param>
     /// <returns></returns>
     internal Task<bool> DeleteReminderRowAsync(string serviceId, GrainId grainId, string reminderName,
-        string etag)
-    {
+        string etag) {
         return ReadAsync(dbStoredQueries.DeleteReminderRowKey, DbStoredQueries.Converters.GetSingleBooleanValue, command =>
-            new DbStoredQueries.Columns(command)
-            {
+            new DbStoredQueries.Columns(command) {
                 ServiceId = serviceId,
                 GrainId = grainId.ToString(),
                 ReminderName = reminderName,
@@ -213,8 +188,7 @@ private readonly DbStoredQueries dbStoredQueries;
     /// </summary>
     /// <param name="serviceId"></param>
     /// <returns></returns>
-    internal Task DeleteReminderRowsAsync(string serviceId)
-    {
+    internal Task DeleteReminderRowsAsync(string serviceId) {
         return ExecuteAsync(dbStoredQueries.DeleteReminderRowsKey, command =>
             new DbStoredQueries.Columns(command) { ServiceId = serviceId });
     }

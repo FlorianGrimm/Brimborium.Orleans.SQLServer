@@ -1,12 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Data;
-using System.Data.Common;
-using System.IO;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -22,12 +13,11 @@ namespace Orleans.Tests.SqlUtils
 /// <summary>
 /// Convenience functions to work with objects of type <see cref="IRelationalStorage"/>.
 /// </summary>
-internal static class RelationalStorageExtensions
-{
+internal static class RelationalStorageExtensions {
     /// <summary>
     /// Used to format .NET objects suitable to relational database format.
     /// </summary>
-    private static readonly SqlServerFormatProvider  adoNetFormatProvider = new SqlServerFormatProvider ();
+    private static readonly SqlServerFormatProvider adoNetFormatProvider = new SqlServerFormatProvider();
 
     /// <summary>
     /// This is a template to produce query parameters that are indexed.
@@ -46,15 +36,12 @@ internal static class RelationalStorageExtensions
     /// <param name="useSqlParams"><em>TRUE</em> if the query should be in parameterized form. <em>FALSE</em> otherwise.</param>
     /// <param name="cancellationToken">The cancellation token. Defaults to <see cref="CancellationToken.None"/>.</param>
     /// <returns>The rows affected.</returns>
-    public static Task<int> ExecuteMultipleInsertIntoAsync<T>(this IRelationalStorage storage, string tableName, IEnumerable<T> parameters, IReadOnlyDictionary<string, string> nameMap = null, IEnumerable<string> onlyOnceColumns = null, bool useSqlParams = true, CancellationToken cancellationToken = default)
-    {
-        if(string.IsNullOrWhiteSpace(tableName))
-        {
+    public static Task<int> ExecuteMultipleInsertIntoAsync<T>(this IRelationalStorage storage, string tableName, IEnumerable<T> parameters, IReadOnlyDictionary<string, string> nameMap = null, IEnumerable<string> onlyOnceColumns = null, bool useSqlParams = true, CancellationToken cancellationToken = default) {
+        if (string.IsNullOrWhiteSpace(tableName)) {
             throw new ArgumentException("The name must be a legal SQL table name", nameof(tableName));
         }
 
-        if(parameters == null)
-        {
+        if (parameters == null) {
             throw new ArgumentNullException(nameof(parameters));
         }
 
@@ -70,30 +57,24 @@ internal static class RelationalStorageExtensions
         const string insertIntoValuesTemplate = "INSERT INTO {0} ({1}) SELECT {2};";
         var columns = string.Empty;
         var values = new List<string>();
-        if(parameters.Any())
-        {
+        if (parameters.Any()) {
             //Type and property information are the same for all of the objects.
             //The following assumes the property names will be retrieved in the same
             //order as is the index iteration done.
             var onlyOnceRow = new List<string>();
             var properties = parameters.First().GetType().GetProperties();
             columns = string.Join(",", nameMap == null ? properties.Select(pn => string.Format("{0}{1}{2}", startEscapeIndicator, pn.Name, endEscapeIndicator)) : properties.Select(pn => string.Format("{0}{1}{2}", startEscapeIndicator, (nameMap.TryGetValue(pn.Name, out var pnName) ? pnName : pn.Name), endEscapeIndicator)));
-            if (onlyOnceColumns != null && onlyOnceColumns.Any())
-            {
+            if (onlyOnceColumns != null && onlyOnceColumns.Any()) {
                 var onlyOnceProperties = properties.Where(pn => onlyOnceColumns.Contains(pn.Name)).Select(pn => pn).ToArray();
                 var onlyOnceData = parameters.First();
-                for(int i = 0; i < onlyOnceProperties.Length; ++i)
-                {
+                for (int i = 0; i < onlyOnceProperties.Length; ++i) {
                     var currentProperty = onlyOnceProperties[i];
                     var parameterValue = currentProperty.GetValue(onlyOnceData, null);
-                    if(useSqlParams)
-                    {
+                    if (useSqlParams) {
                         var parameterName = string.Format("@{0}", (nameMap.TryGetValue(onlyOnceProperties[i].Name, out var parameter) ? parameter : onlyOnceProperties[i].Name));
                         onlyOnceRow.Add(parameterName);
                         sqlParameters.Add(parameterName, parameterValue);
-                    }
-                    else
-                    {
+                    } else {
                         onlyOnceRow.Add(string.Format(adoNetFormatProvider, "{0}", parameterValue));
                     }
                 }
@@ -102,21 +83,16 @@ internal static class RelationalStorageExtensions
             var dataRows = new List<string>();
             var multiProperties = onlyOnceColumns == null ? properties : properties.Where(pn => !onlyOnceColumns.Contains(pn.Name)).Select(pn => pn).ToArray();
             int parameterCount = 0;
-            foreach(var row in parameters)
-            {
-                for(int i = 0; i < multiProperties.Length; ++i)
-                {
+            foreach (var row in parameters) {
+                for (int i = 0; i < multiProperties.Length; ++i) {
                     var currentProperty = multiProperties[i];
                     var parameterValue = currentProperty.GetValue(row, null);
-                    if(useSqlParams)
-                    {
+                    if (useSqlParams) {
                         var parameterName = string.Format(indexedParameterTemplate, parameterCount);
                         dataRows.Add(parameterName);
                         sqlParameters.Add(parameterName, parameterValue);
                         ++parameterCount;
-                    }
-                    else
-                    {
+                    } else {
                         dataRows.Add(string.Format(adoNetFormatProvider, "{0}", parameterValue));
                     }
                 }
@@ -127,12 +103,9 @@ internal static class RelationalStorageExtensions
         }
 
         var query = string.Format(insertIntoValuesTemplate, tableName, columns, string.Join(storageConsts.UnionAllSelectTemplate, values));
-        return storage.ExecuteAsync(query, command =>
-        {
-            if (useSqlParams)
-            {
-                foreach (var sp in sqlParameters)
-                {
+        return storage.ExecuteAsync(query, command => {
+            if (useSqlParams) {
+                foreach (var sp in sqlParameters) {
                     var p = command.CreateParameter();
                     p.ParameterName = sp.Key;
                     p.Value = sp.Value ?? DBNull.Value;
@@ -153,8 +126,7 @@ internal static class RelationalStorageExtensions
     /// <param name="parameterProvider"></param>
     /// <typeparam name="TResult"></typeparam>
     /// <returns></returns>
-    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, Func<IDataRecord, TResult> selector, Action<IDbCommand> parameterProvider)
-    {
+    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, Func<IDataRecord, TResult> selector, Action<IDbCommand> parameterProvider) {
         return storage.ReadAsync(query, parameterProvider, (record, i, cancellationToken) => Task.FromResult(selector(record)));
     }
 
@@ -182,12 +154,9 @@ internal static class RelationalStorageExtensions
     /// IEnumerable&lt;Information&gt; informationData = await db.ReadAsync&lt;Information&gt;(query, new { tname = 200000 });
     /// </code>
     /// </example>
-    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, object parameters, CancellationToken cancellationToken = default)
-    {
-        return storage.ReadAsync(query, command =>
-        {
-            if (parameters != null)
-            {
+    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, object parameters, CancellationToken cancellationToken = default) {
+        return storage.ReadAsync(query, command => {
+            if (parameters != null) {
                 command.ReflectionParameterProvider(parameters);
             }
         }, (selector, resultSetCount, token) => Task.FromResult(selector.ReflectionSelector<TResult>()), cancellationToken: cancellationToken);
@@ -202,8 +171,7 @@ internal static class RelationalStorageExtensions
     /// <param name="query">Executes a given statement. Especially intended to use with <em>SELECT</em> statement, but works with other queries too.</param>
     /// <param name="cancellationToken">The cancellation token. Defaults to <see cref="CancellationToken.None"/>.</param>
     /// <returns>A list of objects as a result of the <see paramref="query"/>.</returns>
-    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, CancellationToken cancellationToken = default)
-    {
+    public static Task<IEnumerable<TResult>> ReadAsync<TResult>(this IRelationalStorage storage, string query, CancellationToken cancellationToken = default) {
         return ReadAsync<TResult>(storage, query, null, cancellationToken);
     }
 
@@ -225,12 +193,9 @@ internal static class RelationalStorageExtensions
     /// await db.ExecuteAsync(query, new { tname = "test_table" });
     /// </code>
     /// </example>
-    public static Task<int> ExecuteAsync(this IRelationalStorage storage, string query, object parameters, CancellationToken cancellationToken = default)
-    {
-        return storage.ExecuteAsync(query, command =>
-        {
-            if (parameters != null)
-            {
+    public static Task<int> ExecuteAsync(this IRelationalStorage storage, string query, object parameters, CancellationToken cancellationToken = default) {
+        return storage.ExecuteAsync(query, command => {
+            if (parameters != null) {
                 command.ReflectionParameterProvider(parameters);
             }
         }, cancellationToken: cancellationToken);
@@ -244,8 +209,7 @@ internal static class RelationalStorageExtensions
     /// <param name="query">Executes a given statement. Especially intended to use with <em>INSERT</em>, <em>UPDATE</em>, <em>DELETE</em> or <em>DDL</em> queries.</param>
     /// <param name="cancellationToken">The cancellation token. Defaults to <see cref="CancellationToken.None"/>.</param>
     /// <returns>Affected rows count.</returns>
-    public static Task<int> ExecuteAsync(this IRelationalStorage storage, string query, CancellationToken cancellationToken = default)
-    {
+    public static Task<int> ExecuteAsync(this IRelationalStorage storage, string query, CancellationToken cancellationToken = default) {
         return ExecuteAsync(storage, query, null, cancellationToken);
     }
 
@@ -258,10 +222,8 @@ internal static class RelationalStorageExtensions
     /// <param name="ordinal">The ordinal column for which to return the stream.</param>
     /// <param name="storage">The storage that gives the invariant.</param>
     /// <returns></returns>
-    public static Stream GetStream(this DbDataReader reader, int ordinal, IRelationalStorage storage)
-    {
-        if(storage.SupportsStreamNatively())
-        {
+    public static Stream GetStream(this DbDataReader reader, int ordinal, IRelationalStorage storage) {
+        if (storage.SupportsStreamNatively()) {
             return reader.GetStream(ordinal);
         }
 

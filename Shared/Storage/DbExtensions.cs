@@ -1,11 +1,3 @@
-using System;
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-using System.Data;
-using System.Data.Common;
-using System.Threading;
-using System.Threading.Tasks;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -21,8 +13,7 @@ namespace Orleans.Tests.SqlUtils
 /// <summary>
 /// Contains some convenience methods to use in conjunction with <see cref="IRelationalStorage">IRelationalStorage</see> and <see cref="RelationalStorage">GenericRelationalStorage</see>.
 /// </summary>
-internal static class DbExtensions
-{
+internal static class DbExtensions {
     /// <summary>
     /// An explicit map of type CLR viz database type conversions.
     /// </summary>
@@ -79,8 +70,7 @@ internal static class DbExtensions
     /// <param name="size">The size of the parameter value.</param>
     /// <param name="dbType">the <see cref="DbType"/> of the parameter.</param>
     /// <returns>A parameter created using the given arguments.</returns>
-    public static IDbDataParameter CreateParameter<T>(this IDbCommand command, ParameterDirection direction, string parameterName, T value, int? size = null, DbType? dbType = null)
-    {
+    public static IDbDataParameter CreateParameter<T>(this IDbCommand command, ParameterDirection direction, string parameterName, T value, int? size = null, DbType? dbType = null) {
         //There should be no boxing for value types. See at:
         //http://stackoverflow.com/questions/8823239/comparing-a-generic-against-null-that-could-be-a-value-or-reference-type
         var parameter = command.CreateParameter();
@@ -103,8 +93,7 @@ internal static class DbExtensions
     /// <param name="direction">The direction of the parameter.</param>
     /// <param name="size">The size of the parameter value.</param>
     /// <param name="dbType">the <see cref="DbType"/> of the parameter.</param>
-    public static void AddParameter<T>(this IDbCommand command, string parameterName, T value, ParameterDirection direction = ParameterDirection.Input, int? size = null, DbType? dbType = null)
-    {
+    public static void AddParameter<T>(this IDbCommand command, string parameterName, T value, ParameterDirection direction = ParameterDirection.Input, int? size = null, DbType? dbType = null) {
         command.Parameters.Add(command.CreateParameter(direction, parameterName, value, size));
     }
 
@@ -117,16 +106,12 @@ internal static class DbExtensions
     /// <param name="default">The default value if value in position is <see cref="System.DBNull"/>.</param>
     /// <returns>Either the given value or the default for the requested type.</returns>
     /// <remarks>This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>
-    public static TValue GetValueOrDefault<TValue>(this IDataRecord record, string fieldName, TValue @default = default)
-    {
+    public static TValue GetValueOrDefault<TValue>(this IDataRecord record, string fieldName, TValue @default = default) {
 
-        try
-        {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return record.IsDBNull(ordinal) ? @default : (TValue)record.GetValue(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -141,16 +126,12 @@ internal static class DbExtensions
     /// <remarks>An explicit function like this is needed in cases where to connector infers a type that is undesirable.
     /// An example here is Npgsql.NodaTime, which makes Npgsql return Noda type and consequently Orleans is not able to
     /// use it since it expects .NET <see cref="System.DateTime"/>. This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>
-    public static DateTime? GetDateTimeValueOrDefault(this IDataRecord record, string fieldName, DateTime? @default = default)
-    {
+    public static DateTime? GetDateTimeValueOrDefault(this IDataRecord record, string fieldName, DateTime? @default = default) {
 
-        try
-        {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return record.IsDBNull(ordinal) ? @default : record.GetDateTime(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -165,17 +146,13 @@ internal static class DbExtensions
     /// <returns>Either the given value or the default for the requested type.</returns>
     /// <exception cref="DataException"/>
     /// <remarks>This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>
-    public static async Task<TValue> GetValueOrDefaultAsync<TValue>(this DbDataReader record, string fieldName, TValue @default = default)
-    {
-        try
-        {
+    public static async Task<TValue> GetValueOrDefaultAsync<TValue>(this DbDataReader record, string fieldName, TValue @default = default) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return (await record.IsDBNullAsync(ordinal).ConfigureAwait(false))
                 ? @default
                 : (await record.GetFieldValueAsync<TValue>(ordinal).ConfigureAwait(false));
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -190,8 +167,7 @@ internal static class DbExtensions
     /// <param name="default">The default value if value in position is <see cref="System.DBNull"/>.</param>
     /// <returns>Either the given value or the default for the requested type.</returns>
     /// <exception cref="IndexOutOfRangeException"/>                
-    public static TValue GetValueOrDefault<TValue>(this IDataRecord record, int ordinal, TValue @default = default)
-    {
+    public static TValue GetValueOrDefault<TValue>(this IDataRecord record, int ordinal, TValue @default = default) {
         return record.IsDBNull(ordinal) ? @default : (TValue)record.GetValue(ordinal);
     }
 
@@ -205,8 +181,7 @@ internal static class DbExtensions
     /// <param name="default">The default value if value in position is <see cref="System.DBNull"/>.</param>
     /// <returns>Either the given value or the default for the requested type.</returns>
     /// <exception cref="IndexOutOfRangeException"/>                
-    public static async Task<TValue> GetValueOrDefaultAsync<TValue>(this DbDataReader record, int ordinal, TValue @default = default)
-    {
+    public static async Task<TValue> GetValueOrDefaultAsync<TValue>(this DbDataReader record, int ordinal, TValue @default = default) {
 
         return (await record.IsDBNullAsync(ordinal).ConfigureAwait(false)) ? @default : (await record.GetFieldValueAsync<TValue>(ordinal).ConfigureAwait(false));
     }
@@ -221,15 +196,11 @@ internal static class DbExtensions
     /// <returns>Value in the given field indicated by <see paramref="fieldName"/>.</returns>
     /// <exception cref="DataException"/>
     /// <remarks>This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>        
-    public static TValue GetValue<TValue>(this IDataRecord record, string fieldName)
-    {
-        try
-        {
+    public static TValue GetValue<TValue>(this IDataRecord record, string fieldName) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return (TValue)record.GetValue(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -243,15 +214,11 @@ internal static class DbExtensions
     /// <remarks>An explicit function like this is needed in cases where to connector infers a type that is undesirable.
     /// An example here is Npgsql.NodaTime, which makes Npgsql return Noda type and consequently Orleans is not able to
     /// use it since it expects .NET <see cref="System.DateTime"/>. This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>
-    public static DateTime GetDateTimeValue(this IDataRecord record, string fieldName)
-    {
-        try
-        {
+    public static DateTime GetDateTimeValue(this IDataRecord record, string fieldName) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return record.GetDateTime(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -263,15 +230,11 @@ internal static class DbExtensions
     /// <param name="fieldName">The name of the field.</param>
     /// <exception cref="DataException"/>
     /// <returns>Integer value in the given field indicated by <see paramref="fieldName"/>.</returns>
-    public static int GetInt32(this IDataRecord record, string fieldName)
-    {
-        try
-        {
+    public static int GetInt32(this IDataRecord record, string fieldName) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return record.GetInt32(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -283,16 +246,12 @@ internal static class DbExtensions
     /// <param name="fieldName">The name of the field.</param>
     /// <exception cref="DataException"/>
     /// <returns>Integer value in the given field indicated by <see paramref="fieldName"/>.</returns>
-    public static long GetInt64(this IDataRecord record, string fieldName)
-    {
-        try
-        {
+    public static long GetInt64(this IDataRecord record, string fieldName) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             // Original casting when old schema is used.  Here to maintain backwards compatibility
             return record.GetFieldType(ordinal) == typeof(int) ? record.GetInt32(ordinal) : record.GetInt64(ordinal);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -304,19 +263,15 @@ internal static class DbExtensions
     /// <param name="fieldName">The name of the field.</param>
     /// <exception cref="DataException"/>
     /// <returns>Nullable int value in the given field indicated by <see paramref="fieldName"/>.</returns>
-    public static int? GetNullableInt32(this IDataRecord record, string fieldName)
-    {
-        try
-        {
+    public static int? GetNullableInt32(this IDataRecord record, string fieldName) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             var value = record.GetValue(ordinal);
             if (value == DBNull.Value)
                 return null;
 
             return Convert.ToInt32(value);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -331,15 +286,11 @@ internal static class DbExtensions
     /// <returns>Value in the given field indicated by <see paramref="fieldName"/>.</returns>
     /// <exception cref="DataException"/>
     /// <remarks>This function throws if the given <see paramref="fieldName"/> does not exist.</remarks>        
-    public static async Task<TValue> GetValueAsync<TValue>(this DbDataReader record, string fieldName, CancellationToken cancellationToken = default)
-    {
-        try
-        {
+    public static async Task<TValue> GetValueAsync<TValue>(this DbDataReader record, string fieldName, CancellationToken cancellationToken = default) {
+        try {
             var ordinal = record.GetOrdinal(fieldName);
             return await record.GetFieldValueAsync<TValue>(ordinal, cancellationToken).ConfigureAwait(false);
-        }
-        catch (IndexOutOfRangeException e)
-        {
+        } catch (IndexOutOfRangeException e) {
             throw new DataException($"Field '{fieldName}' not found in data record.", e);
         }
     }
@@ -354,13 +305,10 @@ internal static class DbExtensions
     /// <param name="parameters">The parameters.</param>
     /// <param name="nameMap">Maps a given property name to another one defined in the map.</param>
     /// <remarks>Does not support collection parameters currently. Does not cache reflection results.</remarks>
-    public static void ReflectionParameterProvider<T>(this IDbCommand command, T parameters, IReadOnlyDictionary<string, string> nameMap = null)
-    {
-        if (!EqualityComparer<T>.Default.Equals(parameters, default))
-        {
+    public static void ReflectionParameterProvider<T>(this IDbCommand command, T parameters, IReadOnlyDictionary<string, string> nameMap = null) {
+        if (!EqualityComparer<T>.Default.Equals(parameters, default)) {
             var properties = parameters.GetType().GetProperties();
-            for (int i = 0; i < properties.Length; ++i)
-            {
+            for (int i = 0; i < properties.Length; ++i) {
                 var property = properties[i];
                 var value = property.GetValue(parameters, null);
                 var parameter = command.CreateParameter();
@@ -382,18 +330,15 @@ internal static class DbExtensions
     /// <param name="record">The record from which to read the results.</param>
     /// <returns>And object of type <see typeparam="TResult"/>.</returns>
     /// <remarks>Does not support <see typeparam="TResult"/> of type <em>dynamic</em>.</remarks>
-    public static TResult ReflectionSelector<TResult>(this IDataRecord record)
-    {
+    public static TResult ReflectionSelector<TResult>(this IDataRecord record) {
         //This is done like this in order to box value types.
         //Otherwise property.SetValue() would have a copy of the struct, which would
         //get garbage collected. Consequently the original struct value would not be set.            
         object obj = Activator.CreateInstance<TResult>();
         var properties = obj.GetType().GetProperties();
-        for (int i = 0; i < properties.Length; ++i)
-        {
+        for (int i = 0; i < properties.Length; ++i) {
             var rp = record[properties[i].Name];
-            if (!Equals(rp, DBNull.Value))
-            {
+            if (!Equals(rp, DBNull.Value)) {
                 properties[i].SetValue(obj, rp, null);
             }
         }

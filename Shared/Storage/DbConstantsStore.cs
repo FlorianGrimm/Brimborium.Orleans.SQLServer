@@ -1,5 +1,3 @@
-using System.Collections.Generic;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -12,8 +10,7 @@ namespace Orleans.Tests.SqlUtils
 // No default namespace intentionally to cause compile errors if something is not defined
 #endif
 
-internal static class DbConstantsStore
-{
+internal static class DbConstantsStore {
     private static readonly Dictionary<string, DbConstants> invariantNameToConsts =
         new Dictionary<string, DbConstants>
         {
@@ -78,8 +75,7 @@ internal static class DbConstantsStore
             }
         };
 
-    public static DbConstants GetDbConstants(string invariantName)
-    {
+    public static DbConstants GetDbConstants(string invariantName) {
         return invariantNameToConsts[invariantName];
     }
 
@@ -88,8 +84,7 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="storage">The storage used.</param>
     /// <returns><em>TRUE</em> if cancellation is supported. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsCommandCancellation(this IRelationalStorage storage)
-    {
+    public static bool SupportsCommandCancellation(this IRelationalStorage storage) {
         return SupportsCommandCancellation(storage.InvariantName);
     }
 
@@ -99,8 +94,7 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
     /// <returns><em>TRUE</em> if cancellation is supported. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsCommandCancellation(string sqlServerProvider)
-    {
+    public static bool SupportsCommandCancellation(string sqlServerProvider) {
         return GetDbConstants(sqlServerProvider).SupportsCommandCancellation;
     }
 
@@ -110,8 +104,7 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="storage">The storage used.</param>
     /// <returns><em>TRUE</em> if streaming is supported natively. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsStreamNatively(this IRelationalStorage storage)
-    {
+    public static bool SupportsStreamNatively(this IRelationalStorage storage) {
         return SupportsStreamNatively(storage.InvariantName);
     }
 
@@ -121,8 +114,7 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
     /// <returns><em>TRUE</em> if streaming is supported natively. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsStreamNatively(string sqlServerProvider)
-    {
+    public static bool SupportsStreamNatively(string sqlServerProvider) {
         return GetDbConstants(sqlServerProvider).SupportsStreamNatively;
     }
 
@@ -132,8 +124,7 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="storage">The storage used.</param>
     /// <returns></returns>
-    public static bool IsSynchronousSqlServerImplementation(this IRelationalStorage storage)
-    {
+    public static bool IsSynchronousSqlServerImplementation(this IRelationalStorage storage) {
         //Currently the assumption is all but MySQL are asynchronous.
         return IsSynchronousSqlServerImplementation(storage.InvariantName);
     }
@@ -144,19 +135,16 @@ internal static class DbConstantsStore
     /// </summary>
     /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
     /// <returns></returns>
-    public static bool IsSynchronousSqlServerImplementation(string sqlServerProvider)
-    {
+    public static bool IsSynchronousSqlServerImplementation(string sqlServerProvider) {
         return GetDbConstants(sqlServerProvider).IsSynchronousSqlServerImplementation;
     }
 
-    public static ICommandInterceptor GetDatabaseCommandInterceptor(string invariantName)
-    {
+    public static ICommandInterceptor GetDatabaseCommandInterceptor(string invariantName) {
         return GetDbConstants(invariantName).DatabaseCommandInterceptor;
     }
 }
 
-internal class DbConstants
-{
+internal class DbConstants {
     /// <summary>
     /// A query template for union all select
     /// </summary>
@@ -191,8 +179,7 @@ internal class DbConstants
 
 
     public DbConstants(char startEscapeIndicator, char endEscapeIndicator, string unionAllSelectTemplate,
-                       bool isSynchronousSqlServerImplementation, bool supportsStreamNatively, bool supportsCommandCancellation, ICommandInterceptor commandInterceptor)
-    {
+                       bool isSynchronousSqlServerImplementation, bool supportsStreamNatively, bool supportsCommandCancellation, ICommandInterceptor commandInterceptor) {
         StartEscapeIndicator = startEscapeIndicator;
         EndEscapeIndicator = endEscapeIndicator;
         UnionAllSelectTemplate = unionAllSelectTemplate;

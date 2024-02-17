@@ -1,10 +1,3 @@
-using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Data.Common;
-using System.Linq;
-using System.Reflection;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -18,8 +11,7 @@ namespace Orleans.Tests.SqlUtils
 #endif
 
 /// This class caches the references to all loaded factories
-internal static class DbConnectionFactory
-{
+internal static class DbConnectionFactory {
     private static readonly ConcurrentDictionary<string, CachedFactory> factoryCache =
         new ConcurrentDictionary<string, CachedFactory>();
 
@@ -35,10 +27,8 @@ internal static class DbConnectionFactory
             { SqlServerInvariants.InvariantNameMySqlConnector, new List<Tuple<string, string>>{ new Tuple<string, string>("MySqlConnector", "MySqlConnector.MySqlConnectorFactory") , new Tuple<string, string>("MySqlConnector", "MySql.Data.MySqlClient.MySqlClientFactory") } },
         };
 
-    private static CachedFactory GetFactory(string invariantName)
-    {
-        if (string.IsNullOrWhiteSpace(invariantName))
-        {
+    private static CachedFactory GetFactory(string invariantName) {
+        if (string.IsNullOrWhiteSpace(invariantName)) {
             throw new ArgumentNullException(nameof(invariantName));
         }
 
@@ -47,36 +37,29 @@ internal static class DbConnectionFactory
             throw new InvalidOperationException($"Database provider factory with '{invariantName}' invariant name not supported.");
 
         List<Exception> exceptions = null;
-        foreach (var providerFactoryDefinition in providerFactoryDefinitions)
-        {
+        foreach (var providerFactoryDefinition in providerFactoryDefinitions) {
             Assembly asm = null;
-            try
-            {
+            try {
                 var asmName = new AssemblyName(providerFactoryDefinition.Item1);
                 asm = Assembly.Load(asmName);
-            }
-            catch (Exception exc)
-            {
+            } catch (Exception exc) {
                 AddException(new InvalidOperationException($"Unable to find and/or load a candidate assembly '{providerFactoryDefinition.Item1}' for '{invariantName}' invariant name.", exc));
                 continue;
             }
 
-            if (asm == null)
-            {
+            if (asm == null) {
                 AddException(new InvalidOperationException($"Can't find database provider factory with '{invariantName}' invariant name. Please make sure that your SqlServer provider package library is deployed with your application."));
                 continue;
             }
 
             var providerFactoryType = asm.GetType(providerFactoryDefinition.Item2);
-            if (providerFactoryType == null)
-            {
+            if (providerFactoryType == null) {
                 AddException(new InvalidOperationException($"Unable to load type '{providerFactoryDefinition.Item2}' for '{invariantName}' invariant name."));
                 continue;
             }
 
             var prop = providerFactoryType.GetFields().SingleOrDefault(p => string.Equals(p.Name, "Instance", StringComparison.OrdinalIgnoreCase) && p.IsStatic);
-            if (prop == null)
-            {
+            if (prop == null) {
                 AddException(new InvalidOperationException($"Invalid provider type '{providerFactoryDefinition.Item2}' for '{invariantName}' invariant name."));
                 continue;
             }
@@ -87,33 +70,27 @@ internal static class DbConnectionFactory
 
         throw new AggregateException(exceptions);
 
-        void AddException(Exception ex)
-        {
-            if (exceptions == null)
-            {
+        void AddException(Exception ex) {
+            if (exceptions == null) {
                 exceptions = new List<Exception>();
             }
             exceptions.Add(ex);
         }
     }
 
-    public static DbConnection CreateConnection(string invariantName, string connectionString)
-    {
-        if (string.IsNullOrWhiteSpace(invariantName))
-        {
+    public static DbConnection CreateConnection(string invariantName, string connectionString) {
+        if (string.IsNullOrWhiteSpace(invariantName)) {
             throw new ArgumentNullException(nameof(invariantName));
         }
 
-        if (string.IsNullOrWhiteSpace(connectionString))
-        {
+        if (string.IsNullOrWhiteSpace(connectionString)) {
             throw new ArgumentNullException(nameof(connectionString));
         }
 
         var factory = factoryCache.GetOrAdd(invariantName, GetFactory).Factory;
         var connection = factory.CreateConnection();
 
-        if (connection == null)
-        {
+        if (connection == null) {
             throw new InvalidOperationException($"Database provider factory: '{invariantName}' did not return a connection object.");
         }
 
@@ -121,10 +98,8 @@ internal static class DbConnectionFactory
         return connection;
     }
 
-    private class CachedFactory
-    {
-        public CachedFactory(DbProviderFactory factory, string factoryName, string factoryDescription, string factoryAssemblyQualifiedNameKey)
-        {
+    private class CachedFactory {
+        public CachedFactory(DbProviderFactory factory, string factoryName, string factoryDescription, string factoryAssemblyQualifiedNameKey) {
             Factory = factory;
             FactoryName = factoryName;
             FactoryDescription = factoryDescription;

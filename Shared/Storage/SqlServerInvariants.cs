@@ -1,6 +1,3 @@
-using System.Collections.Generic;
-using System.Collections.ObjectModel;
-
 #if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
 #elif PERSISTENCE_SqlServer
@@ -16,8 +13,7 @@ namespace Orleans.Tests.SqlUtils
 /// <summary>
 /// A holder for well known, vendor specific connector class invariant names.
 /// </summary>
-internal static class SqlServerInvariants
-{
+internal static class SqlServerInvariants {
     /// <summary>
     /// A list of the supported invariants.
     /// </summary>
