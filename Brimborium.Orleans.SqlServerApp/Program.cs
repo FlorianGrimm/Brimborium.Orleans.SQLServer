@@ -16,11 +16,6 @@ public class Program {
                     options.ServiceId = "Orleans";
                 });
 
-                //siloBuilder.UseSqlServerClustering(
-                //    (SqlServerClusteringSiloOptions options) => {
-                //        // builder.Configuration.Bind("", options);
-                //        options.ConnectionString = builder.Configuration.GetSection("ConnectionString").Value;
-                //    });
                 siloBuilder.UseSqlServerClustering(
                     (OptionsBuilder<SqlServerClusteringSiloOptions> optionsBuilder) => {
                         // builder.Configuration.Bind("", options);
@@ -32,12 +27,6 @@ public class Program {
                 siloBuilder.ConfigureEndpoints(siloPort: 11_111, gatewayPort: 30_000);
                 siloBuilder.ConfigureLogging(builder => builder.SetMinimumLevel(LogLevel.Warning).AddConsole());
 
-                /*
-                siloBuilder.AddSqlServerGrainStorage("sql", (SqlServerGrainStorageOptions options) => {
-                    // builder.Configuration.Bind("", options);
-                    options.ConnectionString = builder.Configuration.GetSection("ConnectionString").Value;
-                });
-                */
                 siloBuilder.AddSqlServerGrainStorage("sql", (OptionsBuilder<SqlServerGrainStorageOptions> optionsBuilder) => {
                     optionsBuilder.Bind(builder.Configuration);
                 });
@@ -59,12 +48,14 @@ public class Program {
         using (var connection = new Microsoft.Data.SqlClient.SqlConnection(connectionString)) {
             connection.Open();
             using (var cmd = new Microsoft.Data.SqlClient.SqlCommand(
-                $"BACKUP DATABASE [{databaseName}] TO  DISK = N'NUL:' WITH NOFORMAT, NOINIT,  NAME = N'Backup', SKIP, NOREWIND, NOUNLOAD"
+                $"BACKUP DATABASE [{databaseName}] TO  DISK = N'NUL:' WITH NOFORMAT, NOINIT,  NAME = N'Backup', SKIP, NOREWIND, NOUNLOAD",
+                connection
                 )) {
                 cmd.ExecuteNonQuery();
             }
             using (var cmd = new Microsoft.Data.SqlClient.SqlCommand(
-                $"BACKUP LOG [{databaseName}] TO  DISK = N'NUL:' WITH NOFORMAT, NOINIT,  NAME = N'Backup', SKIP, NOREWIND, NOUNLOAD"
+                $"BACKUP LOG [{databaseName}] TO  DISK = N'NUL:' WITH NOFORMAT, NOINIT,  NAME = N'Backup', SKIP, NOREWIND, NOUNLOAD",
+                connection
                 )) {
                 cmd.ExecuteNonQuery();
             }
@@ -99,29 +90,60 @@ public class Worker(
     private readonly IClusterClient _ClusterClient = clusterClient;
     private readonly StartCoordination _StartCoordination = startCoordination;
 
+    private const int LoopCount = 5000;
+    private const int ThreadCount = 40;
+    // 5000 * 40 - 78033.6365ms  138806.5116ms
+
+    //private const int LoopCount = 500;
+    //private const int ThreadCount = 40;
+    // 500 * 40 - 4931.7045ms
+
+    //private const int LoopCount = 1000;
+    //private const int ThreadCount = 20;
+    // 1000 * 20 - 15691.6614ms
+
+    //private const int LoopCount = 10000;
+    //private const int ThreadCount = 2;
+    // 10000 * 2 - 61161.7623ms
+    //private const int LoopCount = 20000;
+    //private const int ThreadCount = 1;
+    // 20000 * 1 - 70112.4094ms
+
+    private readonly List<string> _Values = System.Linq.Enumerable.Range(1, LoopCount).Select(i => i.ToString() + new string('-', i)).ToList();
+
+
     protected override async Task ExecuteAsync(CancellationToken stoppingToken) {
         await this._StartCoordination.Wait(stoppingToken);
         await Task.Delay(1000);
 
+
         await System.Console.Out.WriteLineAsync($"Start {DateTime.UtcNow:s}");
         var start = DateTime.UtcNow;
-        for (int loop = 10000; 0 < loop; loop--) {
-            var aGrain = this._ClusterClient.GetGrain<IStringKeyGrain>("a");
-            var oldValue = await aGrain.Get();
-            //await System.Console.Out.WriteLineAsync($"oldValue {oldValue}");
-            var newValue = DateTime.UtcNow.ToString("s");
-            await aGrain.Set(newValue);
-            //await System.Console.Out.WriteLineAsync($"newValue {newValue}");
-        }
+
+        var listTask=System.Linq.Enumerable.Range(1, ThreadCount)
+            .Select(i => i.ToString())
+            .Select(n=>this.RunLoop(n))
+            .ToList();
+        await Task.WhenAll(listTask);
         var stop = DateTime.UtcNow;
         await System.Console.Out.WriteLineAsync($"Stop {stop:s} - {(stop - start).TotalMilliseconds}ms");
         this._HostApplicationLifetime.StopApplication();
+    }
+
+    private async Task RunLoop(string name) {
+        var grain = this._ClusterClient.GetGrain<IStringKeyGrain>(name);
+        for (int idxLoop = 0; idxLoop<LoopCount; idxLoop++) {
+            var oldValue = await grain.Get();
+            var newValue = this._Values[idxLoop];
+            await grain.Set(newValue);
+        }
     }
 }
 
 [Alias("IStringKeyGrain")]
 public interface IStringKeyGrain : IGrainWithStringKey {
     [Alias("Get")]
+    [Orleans.Concurrency.ReadOnly]
     ValueTask<string> Get();
 
     [Alias("Set")]
@@ -144,8 +166,10 @@ public class StringKeyGrain : Grain, IStringKeyGrain {
         ) {
         this._State = state;
     }
-    public ValueTask<string> Get() {
-        return ValueTask.FromResult(this._State.State.Value);
+    public async ValueTask<string> Get() {
+        await this._State.ReadStateAsync();
+        return this._State.State.Value;
+        //return ValueTask.FromResult(this._State.State.Value);
     }
 
     public async ValueTask Set(string value) {
