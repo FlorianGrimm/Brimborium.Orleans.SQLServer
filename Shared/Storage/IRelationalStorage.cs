@@ -94,11 +94,6 @@ internal interface IRelationalStorage
     Task<int> ExecuteAsync(string query, Action<IDbCommand> parameterProvider, CommandBehavior commandBehavior = CommandBehavior.Default, CancellationToken cancellationToken = default);
 
     /// <summary>
-    /// The well known invariant name of the underlying database.
-    /// </summary>
-    string InvariantName { get; }
-
-    /// <summary>
     /// The connection string used to connect to the database.
     /// </summary>
     string ConnectionString { get; }

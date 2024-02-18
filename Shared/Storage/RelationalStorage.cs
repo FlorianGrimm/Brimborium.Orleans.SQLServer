@@ -20,29 +20,6 @@ internal class RelationalStorage : IRelationalStorage {
     /// </summary>
     private readonly string _connectionString;
 
-    [Obsolete]
-    const string _invariantName = "Microsoft.Data.SqlClient";
-
-    [Obsolete]
-    const bool _supportsCommandCancellation = true;
-
-    [Obsolete]
-    const bool _isSynchronousSqlServerImplementation=false;
-
-    [Obsolete]
-    private readonly ICommandInterceptor _databaseCommandInterceptor;
-
-    /// <summary>
-    /// The invariant name of the connector for this database.
-    /// </summary>
-    [Obsolete]
-    public string InvariantName {
-        get {
-            return _invariantName;
-        }
-    }
-
-
     /// <summary>
     /// The connection string used to connect to the database.
     /// </summary>
@@ -56,7 +33,6 @@ internal class RelationalStorage : IRelationalStorage {
     /// <summary>
     /// Creates an instance of a database of type <see cref="IRelationalStorage"/>.
     /// </summary>
-    /// <param name="invariantName">The invariant name of the connector for this database.</param>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
     /// <returns></returns>
     public static IRelationalStorage CreateInstance(string connectionString) {
@@ -167,7 +143,6 @@ internal class RelationalStorage : IRelationalStorage {
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
     private RelationalStorage(string connectionString) {
         this._connectionString = connectionString;
-        this._databaseCommandInterceptor = NoOpCommandInterceptor.Instance;
     }
 
     private static async Task<Tuple<IEnumerable<TResult>, int>> SelectAsync<TResult>(DbDataReader reader, Func<IDataReader, int, CancellationToken, Task<TResult>> selector, CancellationToken cancellationToken) {
@@ -209,22 +184,14 @@ internal class RelationalStorage : IRelationalStorage {
         Func<IDataRecord, int, CancellationToken, Task<TResult>> selector,
         CommandBehavior commandBehavior,
         CancellationToken cancellationToken) {
-        
+
         using (var connection = new Microsoft.Data.SqlClient.SqlConnection(_connectionString)) {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             using (var command = connection.CreateCommand()) {
                 parameterProvider?.Invoke(command);
                 command.CommandText = query;
-
-                _databaseCommandInterceptor.Intercept(command);
-
                 Task<Tuple<IEnumerable<TResult>, int>> ret;
-                if (_isSynchronousSqlServerImplementation) {
-                    ret = Task.Run(() => executor(command, selector, commandBehavior, cancellationToken), cancellationToken);
-                } else {
-                    ret = executor(command, selector, commandBehavior, cancellationToken);
-                }
-
+                ret = executor(command, selector, commandBehavior, cancellationToken);
                 return await ret.ConfigureAwait(continueOnCapturedContext: false);
             }
         }
