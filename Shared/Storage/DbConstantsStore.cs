@@ -30,69 +30,6 @@ internal static class DbConstantsStore {
         return invariantNameToConsts[invariantName];
     }
 
-    /// <summary>
-    /// If the underlying storage supports cancellation or not.
-    /// </summary>
-    /// <param name="storage">The storage used.</param>
-    /// <returns><em>TRUE</em> if cancellation is supported. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsCommandCancellation(this IRelationalStorage storage) {
-        return SupportsCommandCancellation(storage.InvariantName);
-    }
-
-
-    /// <summary>
-    /// If the provider supports cancellation or not.
-    /// </summary>
-    /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
-    /// <returns><em>TRUE</em> if cancellation is supported. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsCommandCancellation(string sqlServerProvider) {
-        return GetDbConstants(sqlServerProvider).SupportsCommandCancellation;
-    }
-
-
-    /// <summary>
-    /// If the underlying storage supports streaming natively.
-    /// </summary>
-    /// <param name="storage">The storage used.</param>
-    /// <returns><em>TRUE</em> if streaming is supported natively. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsStreamNatively(this IRelationalStorage storage) {
-        return SupportsStreamNatively(storage.InvariantName);
-    }
-
-
-    /// <summary>
-    /// If the provider supports streaming natively.
-    /// </summary>
-    /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
-    /// <returns><em>TRUE</em> if streaming is supported natively. <em>FALSE</em> otherwise.</returns>
-    public static bool SupportsStreamNatively(string sqlServerProvider) {
-        return GetDbConstants(sqlServerProvider).SupportsStreamNatively;
-    }
-
-
-    /// <summary>
-    /// If the underlying SqlServer implementation is known to be synchronous.
-    /// </summary>
-    /// <param name="storage">The storage used.</param>
-    /// <returns></returns>
-    public static bool IsSynchronousSqlServerImplementation(this IRelationalStorage storage) {
-        //Currently the assumption is all but MySQL are asynchronous.
-        return IsSynchronousSqlServerImplementation(storage.InvariantName);
-    }
-
-
-    /// <summary>
-    /// If the provider supports cancellation or not.
-    /// </summary>
-    /// <param name="sqlServerProvider">The SqlServer provider invariant string.</param>
-    /// <returns></returns>
-    public static bool IsSynchronousSqlServerImplementation(string sqlServerProvider) {
-        return GetDbConstants(sqlServerProvider).IsSynchronousSqlServerImplementation;
-    }
-
-    public static ICommandInterceptor GetDatabaseCommandInterceptor(string invariantName) {
-        return GetDbConstants(invariantName).DatabaseCommandInterceptor;
-    }
 }
 
 internal class DbConstants {

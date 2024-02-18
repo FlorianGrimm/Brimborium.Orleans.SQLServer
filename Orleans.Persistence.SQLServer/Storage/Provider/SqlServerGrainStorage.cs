@@ -397,10 +397,9 @@ public class SqlServerGrainStorage : IGrainStorage, ILifecycleParticipant<ISiloL
 
         logger.LogInformation(
             (int)RelationalStorageProviderCodes.RelationalProviderInitProvider,
-            "Initialized storage provider: ServiceId={ServiceId} ProviderName={Name} Invariant={InvariantName} ConnectionString={ConnectionString}.",
+            "Initialized storage provider: ServiceId={ServiceId} ProviderName={Name} ConnectionString={ConnectionString}.",
             serviceId,
             name,
-            Storage.InvariantName,
             ConfigUtilities.RedactConnectionStringInfo(Storage.ConnectionString));
     }
 
