@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+    <PropertyGroup>
+        <PackageId>Microsoft.Orleans.Persistence.SqlServer</PackageId>
+        <Title>Microsoft Orleans SqlServer Persistence Provider</Title>
+        <Description>Microsoft Orleans persistence providers backed by SqlServer</Description>
+        <PackageTags>$(PackageTags) SQL Server </PackageTags>
+        <TargetFramework>net8.0</TargetFramework>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <AssemblyName>Orleans.Persistence.SqlServer</AssemblyName>
+        <RootNamespace>Orleans.Persistence.SqlServer</RootNamespace>
+        <DefineConstants>$(DefineConstants);PERSISTENCE_SqlServer</DefineConstants>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <Compile Include="..\Shared\Storage\*.cs" LinkBase="Storage" />
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />
+        <PackageReference Include="Microsoft.Orleans.Reminders" Version="8.0.0" />
+        <PackageReference Include="Microsoft.Orleans.Runtime" Version="8.0.0" />
+    </ItemGroup>
+
+    <!--
+      <ItemGroup>
+        <ProjectReference Include="$(SourceRoot)src\Orleans.Reminders\Orleans.Reminders.csproj" />
+        <ProjectReference Include="$(SourceRoot)src\Orleans.Runtime\Orleans.Runtime.csproj" />
+      </ItemGroup>
+    -->
+</Project>

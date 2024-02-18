@@ -1,0 +1,56 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.0.31903.59
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Persistence.SQLServer", "Orleans.Persistence.SQLServer\Orleans.Persistence.SQLServer.csproj", "{A6F5E15E-C971-4C11-BF83-16BEE439B693}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Clustering.SqlServer", "Orleans.Clustering.SQLServer\Orleans.Clustering.SqlServer.csproj", "{B4504209-ECBA-413F-9B19-2AA363731D0D}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Reminders.SqlServer", "Orleans.Reminders.SQLServer\Orleans.Reminders.SqlServer.csproj", "{FF2691D0-5E73-4CB9-8D43-BAE2D680B131}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Database", "Database\Database.csproj", "{1621A7E6-9A73-438A-A815-EE2376C924F9}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{88E3F406-F88D-423C-B8F6-F4531CD5AD31}"
+	ProjectSection(SolutionItems) = preProject
+		Directory.Build.props = Directory.Build.props
+		Directory.Build.targets = Directory.Build.targets
+		global.json = global.json
+	EndProjectSection
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Brimborium.Orleans.SqlServerApp", "Brimborium.Orleans.SqlServerApp\Brimborium.Orleans.SqlServerApp.csproj", "{CFDEC119-575E-42FB-AA96-05C2CB4AE03C}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A6F5E15E-C971-4C11-BF83-16BEE439B693}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A6F5E15E-C971-4C11-BF83-16BEE439B693}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A6F5E15E-C971-4C11-BF83-16BEE439B693}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A6F5E15E-C971-4C11-BF83-16BEE439B693}.Release|Any CPU.Build.0 = Release|Any CPU
+		{B4504209-ECBA-413F-9B19-2AA363731D0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{B4504209-ECBA-413F-9B19-2AA363731D0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{B4504209-ECBA-413F-9B19-2AA363731D0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{B4504209-ECBA-413F-9B19-2AA363731D0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{FF2691D0-5E73-4CB9-8D43-BAE2D680B131}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FF2691D0-5E73-4CB9-8D43-BAE2D680B131}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FF2691D0-5E73-4CB9-8D43-BAE2D680B131}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FF2691D0-5E73-4CB9-8D43-BAE2D680B131}.Release|Any CPU.Build.0 = Release|Any CPU
+		{1621A7E6-9A73-438A-A815-EE2376C924F9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{1621A7E6-9A73-438A-A815-EE2376C924F9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{1621A7E6-9A73-438A-A815-EE2376C924F9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{1621A7E6-9A73-438A-A815-EE2376C924F9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CFDEC119-575E-42FB-AA96-05C2CB4AE03C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CFDEC119-575E-42FB-AA96-05C2CB4AE03C}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CFDEC119-575E-42FB-AA96-05C2CB4AE03C}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CFDEC119-575E-42FB-AA96-05C2CB4AE03C}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {E83313E0-D5C2-4D2B-ACE1-11221C510776}
+	EndGlobalSection
+EndGlobal
