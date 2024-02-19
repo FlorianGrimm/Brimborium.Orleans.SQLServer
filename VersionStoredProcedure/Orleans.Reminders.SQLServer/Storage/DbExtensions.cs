@@ -267,9 +267,8 @@ internal static class DbExtensions {
         try {
             var ordinal = record.GetOrdinal(fieldName);
             var value = record.GetValue(ordinal);
-            if (value == DBNull.Value) {
+            if (value == DBNull.Value)
                 return null;
-            }
 
             return Convert.ToInt32(value);
         } catch (IndexOutOfRangeException e) {

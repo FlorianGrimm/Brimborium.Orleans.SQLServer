@@ -13,13 +13,11 @@
         <DefineConstants>$(DefineConstants);REMINDERS_SqlServer</DefineConstants>
     </PropertyGroup>
 
+    <!--
     <ItemGroup>
         <Compile Include="..\Shared\Storage\*.cs" LinkBase="Storage" />
     </ItemGroup>
-
-    <ItemGroup>
-      <Compile Remove="..\Shared\Storage\OracleDatabaseCommandInterceptor.cs" />
-    </ItemGroup>
+    -->
 
     <ItemGroup>
         <PackageReference Include="Microsoft.Data.SqlClient" Version="5.1.5" />

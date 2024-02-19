@@ -1,21 +1,9 @@
-#if CLUSTERING_SqlServer
-namespace Orleans.Clustering.SqlServer.Storage;
-#elif PERSISTENCE_SqlServer
-namespace Orleans.Persistence.SqlServer.Storage;
-#elif REMINDERS_SqlServer
-
 namespace Orleans.Reminders.SqlServer.Storage;
-#elif TESTER_SQLUTILS
-
-namespace Orleans.Tests.SqlUtils
-#else
-// No default namespace intentionally to cause compile errors if something is not defined
-#endif
 
 /// <summary>
 /// A class for all relational storages that support all systems stores : membership, reminders and statistics
 /// </summary>    
-internal class RelationalOrleansQueries {
+internal class RelationalOrleansQueriesReminder {
     /// <summary>
     /// the underlying storage
     /// </summary>
@@ -26,32 +14,32 @@ internal class RelationalOrleansQueries {
     /// table that will be updated with multiple values. The other ones are updated with one value only.
     /// </summary>
     private static readonly string[] InsertStatisticsMultiupdateColumns = {
-        DbStoredQueries.Columns.IsValueDelta,
-        DbStoredQueries.Columns.StatValue,
-        DbStoredQueries.Columns.Statistic
+        DbStoredQueriesReminder.Columns.IsValueDelta,
+        DbStoredQueriesReminder.Columns.StatValue,
+        DbStoredQueriesReminder.Columns.Statistic
     };
 
     /// <summary>
     /// the orleans functional queries
     /// </summary>
-    private readonly DbStoredQueries dbStoredQueries;
+    private readonly DbStoredQueriesReminder _DBStoredQueries;
 
     /// <summary>
     /// Constructor
     /// </summary>
     /// <param name="storage">the underlying relational storage</param>
     /// <param name="dbStoredQueries">Orleans functional queries</param>
-    private RelationalOrleansQueries(IRelationalStorage storage, DbStoredQueries dbStoredQueries) {
+    private RelationalOrleansQueriesReminder(IRelationalStorage storage, DbStoredQueriesReminder dbStoredQueries) {
         this.storage = storage;
-        this.dbStoredQueries = dbStoredQueries;
+        this._DBStoredQueries = dbStoredQueries;
     }
 
     /// <summary>
-    /// Creates an instance of a database of type <see cref="RelationalOrleansQueries"/> and Initializes Orleans queries from the database. 
+    /// Creates an instance of a database of type <see cref="RelationalOrleansQueriesReminder"/> and Initializes Orleans queries from the database. 
     /// Orleans uses only these queries and the variables therein, nothing more.
     /// </summary>
     /// <param name="connectionString">The connection string this database should use for database operations.</param>
-    internal static async Task<RelationalOrleansQueries> CreateInstance(string connectionString) {
+    internal static async Task<RelationalOrleansQueriesReminder> CreateInstance(string connectionString) {
 #if false
         var storage = RelationalStorage.CreateInstance( connectionString);
         var queries = await storage.ReadAsync(DbStoredQueries.GetQueriesKey, DbStoredQueries.Converters.GetQueryKeyAndValue, null);
@@ -81,16 +69,16 @@ internal class RelationalOrleansQueries {
         queries.Add("UpdateMembershipKey", "dbo.UpdateMembership");
         queries.Add("DeleteMembershipTableEntriesKey", "dbo.DeleteMembershipTableEntries");
         queries.Add("CleanupDefunctSiloEntriesKey", "dbo.CleanupDefunctSiloEntries");
-        return new RelationalOrleansQueries(storage, new DbStoredQueries(queries.ToDictionary(q => q.Key, q => q.Value)));
+        return new RelationalOrleansQueriesReminder(storage, new DbStoredQueriesReminder(queries.ToDictionary(q => q.Key, q => q.Value)));
     }
 
-    private Task ExecuteAsync(string query, Func<IDbCommand, DbStoredQueries.Columns> parameterProvider) {
+    private Task ExecuteAsync(string query, Func<IDbCommand, DbStoredQueriesReminder.Columns> parameterProvider) {
         return storage.ExecuteAsync(query, command => parameterProvider(command));
     }
 
     private async Task<TAggregate> ReadAsync<TResult, TAggregate>(string query,
         Func<IDataRecord, TResult> selector,
-        Func<IDbCommand, DbStoredQueries.Columns> parameterProvider,
+        Func<IDbCommand, DbStoredQueriesReminder.Columns> parameterProvider,
         Func<IEnumerable<TResult>, TAggregate> aggregator) {
         var ret = await storage.ReadAsync(query, selector, command => parameterProvider(command));
         return aggregator(ret);
@@ -105,8 +93,8 @@ internal class RelationalOrleansQueries {
     /// <param name="grainId">The grain reference (ID).</param>
     /// <returns>Reminder table data.</returns>
     internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, GrainId grainId) {
-        return ReadAsync(dbStoredQueries.ReadReminderRowsKey, GetReminderEntry, command =>
-            new DbStoredQueries.Columns(command) { ServiceId = serviceId, GrainId = grainId.ToString() },
+        return ReadAsync(_DBStoredQueries.ReadReminderRowsKey, GetReminderEntry, command =>
+            new DbStoredQueriesReminder.Columns(command) { ServiceId = serviceId, GrainId = grainId.ToString() },
             ret => new ReminderTableData(ret.ToList()));
     }
 
@@ -119,10 +107,10 @@ internal class RelationalOrleansQueries {
     /// <param name="endHash">The end hash.</param>
     /// <returns>Reminder table data.</returns>
     internal Task<ReminderTableData> ReadReminderRowsAsync(string serviceId, uint beginHash, uint endHash) {
-        var query = (int)beginHash < (int)endHash ? dbStoredQueries.ReadRangeRows1Key : dbStoredQueries.ReadRangeRows2Key;
+        var query = (int)beginHash < (int)endHash ? _DBStoredQueries.ReadRangeRows1Key : _DBStoredQueries.ReadRangeRows2Key;
 
         return ReadAsync(query, GetReminderEntry, command =>
-            new DbStoredQueries.Columns(command) { ServiceId = serviceId, BeginHash = beginHash, EndHash = endHash },
+            new DbStoredQueriesReminder.Columns(command) { ServiceId = serviceId, BeginHash = beginHash, EndHash = endHash },
             ret => new ReminderTableData(ret.ToList()));
     }
 
@@ -134,17 +122,17 @@ internal class RelationalOrleansQueries {
 
     internal static ReminderEntry GetReminderEntry(IDataRecord record) {
         //Having non-null field, GrainId, means with the query filter options, an entry was found.
-        string grainId = record.GetValueOrDefault<string>(nameof(DbStoredQueries.Columns.GrainId));
+        string grainId = record.GetValueOrDefault<string>(nameof(DbStoredQueriesReminder.Columns.GrainId));
         if (grainId != null) {
             return new ReminderEntry {
                 GrainId = GrainId.Parse(grainId),
-                ReminderName = record.GetValue<string>(nameof(DbStoredQueries.Columns.ReminderName)),
-                StartAt = record.GetDateTimeValue(nameof(DbStoredQueries.Columns.StartTime)),
+                ReminderName = record.GetValue<string>(nameof(DbStoredQueriesReminder.Columns.ReminderName)),
+                StartAt = record.GetDateTimeValue(nameof(DbStoredQueriesReminder.Columns.StartTime)),
 
                 //Use the GetInt64 method instead of the generic GetValue<TValue> version to retrieve the value from the data record
                 //GetValue<int> causes an InvalidCastException with oracle data provider. See https://github.com/dotnet/orleans/issues/3561
-                Period = TimeSpan.FromMilliseconds(record.GetInt64(nameof(DbStoredQueries.Columns.Period))),
-                ETag = DbStoredQueries.Converters.GetVersion(record).ToString()
+                Period = TimeSpan.FromMilliseconds(record.GetInt64(nameof(DbStoredQueriesReminder.Columns.Period))),
+                ETag = DbStoredQueriesReminder.Converters.GetVersion(record).ToString()
             };
         }
         return null;
@@ -158,8 +146,8 @@ internal class RelationalOrleansQueries {
     /// <returns>A remainder entry.</returns>
     internal Task<ReminderEntry> ReadReminderRowAsync(string serviceId, GrainId grainId,
         string reminderName) {
-        return ReadAsync(dbStoredQueries.ReadReminderRowKey, GetReminderEntry, command =>
-            new DbStoredQueries.Columns(command) {
+        return ReadAsync(_DBStoredQueries.ReadReminderRowKey, GetReminderEntry, command =>
+            new DbStoredQueriesReminder.Columns(command) {
                 ServiceId = serviceId,
                 GrainId = grainId.ToString(),
                 ReminderName = reminderName
@@ -177,8 +165,8 @@ internal class RelationalOrleansQueries {
     /// <returns>The new etag of the either or updated or inserted reminder row.</returns>
     internal Task<string> UpsertReminderRowAsync(string serviceId, GrainId grainId,
         string reminderName, DateTime startTime, TimeSpan period) {
-        return ReadAsync(dbStoredQueries.UpsertReminderRowKey, DbStoredQueries.Converters.GetVersion, command =>
-            new DbStoredQueries.Columns(command) {
+        return ReadAsync(_DBStoredQueries.UpsertReminderRowKey, DbStoredQueriesReminder.Converters.GetVersion, command =>
+            new DbStoredQueriesReminder.Columns(command) {
                 ServiceId = serviceId,
                 GrainHash = grainId.GetUniformHashCode(),
                 GrainId = grainId.ToString(),
@@ -198,8 +186,8 @@ internal class RelationalOrleansQueries {
     /// <returns></returns>
     internal Task<bool> DeleteReminderRowAsync(string serviceId, GrainId grainId, string reminderName,
         string etag) {
-        return ReadAsync(dbStoredQueries.DeleteReminderRowKey, DbStoredQueries.Converters.GetSingleBooleanValue, command =>
-            new DbStoredQueries.Columns(command) {
+        return ReadAsync(_DBStoredQueries.DeleteReminderRowKey, DbStoredQueriesReminder.Converters.GetSingleBooleanValue, command =>
+            new DbStoredQueriesReminder.Columns(command) {
                 ServiceId = serviceId,
                 GrainId = grainId.ToString(),
                 ReminderName = reminderName,
@@ -213,8 +201,8 @@ internal class RelationalOrleansQueries {
     /// <param name="serviceId"></param>
     /// <returns></returns>
     internal Task DeleteReminderRowsAsync(string serviceId) {
-        return ExecuteAsync(dbStoredQueries.DeleteReminderRowsKey, command =>
-            new DbStoredQueries.Columns(command) { ServiceId = serviceId });
+        return ExecuteAsync(_DBStoredQueries.DeleteReminderRowsKey, command =>
+            new DbStoredQueriesReminder.Columns(command) { ServiceId = serviceId });
     }
 
 #endif

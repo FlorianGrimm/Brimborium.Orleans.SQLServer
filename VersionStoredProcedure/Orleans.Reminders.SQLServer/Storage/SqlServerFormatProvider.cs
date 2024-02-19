@@ -22,7 +22,7 @@ internal class SqlServerFormatProvider : IFormatProvider {
     /// <param name="formatType">Requested format type</param>
     /// <returns></returns>
     public object GetFormat(Type formatType) {
-        return formatType == typeof(ICustomFormatter) ? this._Formatter : null;
+        return formatType == typeof(ICustomFormatter) ? _Formatter : null;
     }
 
 

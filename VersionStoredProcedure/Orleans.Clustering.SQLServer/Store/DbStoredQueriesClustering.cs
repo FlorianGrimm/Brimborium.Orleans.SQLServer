@@ -1,137 +1,82 @@
-#if CLUSTERING_SqlServer
 namespace Orleans.Clustering.SqlServer.Storage;
-#elif ORLEANS_REMINDERS_PROVIDER
-using Orleans.Reminders.SqlServer.Converters;
-namespace Orleans.Reminders.SqlServer.Storage
-#elif PERSISTENCE_SqlServer
-namespace Orleans.Persistence.SqlServer.Storage;
-#elif REMINDERS_SqlServer
-namespace Orleans.Reminders.SqlServer.Storage;
-#elif TESTER_SQLUTILS
-namespace Orleans.Tests.SqlUtils
-#else
-// No default namespace intentionally to cause compile errors if something is not defined
-#endif
 
 /// <summary>
 /// This class implements the expected contract between Orleans and the underlying relational storage.
 /// It makes sure all the stored queries are present and 
 /// </summary>
-internal class DbStoredQueries {
-    private readonly Dictionary<string, string> queries;
+internal class DbStoredQueriesClustering(
+    string gatewaysQueryKey,
+    string membershipReadRowKey,
+    string membershipReadAllKey,
+    string insertMembershipVersionKey,
+    string updateIAmAlivetimeKey,
+    string insertMembershipKey,
+    string updateMembershipKey,
+    string deleteMembershipTableEntriesKey,
+    string cleanupDefunctSiloEntriesKey
+    ) {
 
-    internal DbStoredQueries(Dictionary<string, string> queries) {
-        var fields = typeof(DbStoredQueries).GetProperties(BindingFlags.Instance | BindingFlags.NonPublic)
-            .Select(p => p.Name);
-        var missingQueryKeys = fields.Except(queries.Keys).ToArray();
-        if (missingQueryKeys.Length > 0) {
-            throw new ArgumentException(
-                $"Not all required queries found. Missing are: {string.Join(",", missingQueryKeys)}");
-        }
-        this.queries = queries;
+    public DbStoredQueriesClustering()
+        : this(
+            gatewaysQueryKey: "dbo.GatewaysQueryKey",
+            membershipReadRowKey: "dbo.MembershipReadRowKey",
+            membershipReadAllKey: "dbo.MembershipReadAllKey",
+            insertMembershipVersionKey: "dbo.InsertMembershipVersionKey",
+            updateIAmAlivetimeKey: "dbo.UpdateIAmAlivetimeKey",
+            insertMembershipKey: "dbo.InsertMembershipKey",
+            updateMembershipKey: "dbo.UpdateMembershipKey",
+            deleteMembershipTableEntriesKey: "dbo.DeleteMembershipTableEntriesKey",
+            cleanupDefunctSiloEntriesKey: "dbo.CleanupDefunctSiloEntriesKey"
+        ) {
+
     }
 
     /// <summary>
-    /// The query that's used to get all the stored queries.
-    /// this will probably be the same for all relational dbs.
-    /// </summary>
-    internal const string GetQueriesKey = "SELECT QueryKey, QueryText FROM OrleansQuery";
-
-#if CLUSTERING_SqlServer || TESTER_SQLUTILS
-
-    /// <summary>
     /// A query template to retrieve gateway URIs.
-    /// </summary>        
-    internal string GatewaysQueryKey => queries[nameof(GatewaysQueryKey)];
+    /// </summary>
+    internal string GatewaysQueryKey = gatewaysQueryKey;
 
     /// <summary>
     /// A query template to retrieve a single row of membership data.
-    /// </summary>        
-    internal string MembershipReadRowKey => queries[nameof(MembershipReadRowKey)];
+    /// </summary>
+    internal string MembershipReadRowKey = membershipReadRowKey;
 
     /// <summary>
     /// A query template to retrieve all membership data.
-    /// </summary>        
-    internal string MembershipReadAllKey => queries[nameof(MembershipReadAllKey)];
+    /// </summary>
+    internal string MembershipReadAllKey = membershipReadAllKey;
 
     /// <summary>
     /// A query template to insert a membership version row.
     /// </summary>
-    internal string InsertMembershipVersionKey => queries[nameof(InsertMembershipVersionKey)];
+    internal string InsertMembershipVersionKey = insertMembershipVersionKey;
 
     /// <summary>
     /// A query template to update "I Am Alive Time".
     /// </summary>
-    internal string UpdateIAmAlivetimeKey => queries[nameof(UpdateIAmAlivetimeKey)];
+    internal string UpdateIAmAlivetimeKey = updateIAmAlivetimeKey;
 
     /// <summary>
     /// A query template to insert a membership row.
     /// </summary>
-    internal string InsertMembershipKey => queries[nameof(InsertMembershipKey)];
+    internal string InsertMembershipKey = insertMembershipKey;
 
     /// <summary>
     /// A query template to update a membership row.
     /// </summary>
-    internal string UpdateMembershipKey => queries[nameof(UpdateMembershipKey)];
+    internal string UpdateMembershipKey = updateMembershipKey;
 
     /// <summary>
     /// A query template to delete membership entries.
     /// </summary>
-    internal string DeleteMembershipTableEntriesKey => queries[nameof(DeleteMembershipTableEntriesKey)];
+    internal string DeleteMembershipTableEntriesKey = deleteMembershipTableEntriesKey;
 
     /// <summary>
     /// A query template to cleanup defunct silo entries.
     /// </summary>
-    internal string CleanupDefunctSiloEntriesKey => queries[nameof(CleanupDefunctSiloEntriesKey)];
-
-#endif
-
-#if REMINDERS_SqlServer || TESTER_SQLUTILS || ORLEANS_REMINDERS_PROVIDER
-
-    /// <summary>
-    /// A query template to read reminder entries.
-    /// </summary>
-    internal string ReadReminderRowsKey => queries[nameof(ReadReminderRowsKey)];
-
-    /// <summary>
-    /// A query template to read reminder entries with ranges.
-    /// </summary>
-    internal string ReadRangeRows1Key => queries[nameof(ReadRangeRows1Key)];
-
-    /// <summary>
-    /// A query template to read reminder entries with ranges.
-    /// </summary>
-    internal string ReadRangeRows2Key => queries[nameof(ReadRangeRows2Key)];
-
-    /// <summary>
-    /// A query template to read a reminder entry with ranges.
-    /// </summary>
-    internal string ReadReminderRowKey => queries[nameof(ReadReminderRowKey)];
-
-    /// <summary>
-    /// A query template to upsert a reminder row.
-    /// </summary>
-    internal string UpsertReminderRowKey => queries[nameof(UpsertReminderRowKey)];
-
-    /// <summary>
-    /// A query template to delete a reminder row.
-    /// </summary>
-    internal string DeleteReminderRowKey => queries[nameof(DeleteReminderRowKey)];
-
-    /// <summary>
-    /// A query template to delete all reminder rows.
-    /// </summary>
-    internal string DeleteReminderRowsKey => queries[nameof(DeleteReminderRowsKey)];
-
-#endif
+    internal string CleanupDefunctSiloEntriesKey = cleanupDefunctSiloEntriesKey;
 
     internal static class Converters {
-        internal static KeyValuePair<string, string> GetQueryKeyAndValue(IDataRecord record) {
-            return new KeyValuePair<string, string>(
-                record.GetValue<string>("QueryKey"),
-                record.GetValue<string>("QueryText"));
-        }
-
 
         internal static Tuple<MembershipEntry, int> GetMembershipEntry(IDataRecord record) {
             //TODO: This is a bit of hack way to check in the current version if there's membership data or not, but if there's a start time, there's member.            
@@ -197,7 +142,10 @@ internal class DbStoredQueries {
         }
 
         internal static bool GetSingleBooleanValue(IDataRecord record) {
-            if (record.FieldCount != 1) throw new InvalidOperationException("Expected a single column");
+            if (record.FieldCount != 1) {
+                throw new InvalidOperationException("Expected a single column");
+            }
+
             return Convert.ToBoolean(record.GetValue(0));
         }
     }
@@ -206,44 +154,52 @@ internal class DbStoredQueries {
         private readonly IDbCommand command;
 
         internal Columns(IDbCommand cmd) {
-            command = cmd;
-
+            this.command = cmd;
         }
 
-        private void Add<T>(string paramName, T paramValue, DbType? dbType = null) {
-            command.AddParameter(paramName, paramValue, dbType: dbType);
+        private void Add<T>(string paramName, T paramValue) {
+            this.command.AddParameter(paramName, paramValue);
         }
+
+        private void Add<T>(string paramName, T paramValue, DbType dbType) {
+            this.command.AddParameter(paramName, paramValue, dbType: dbType);
+        }
+
+        private void Add<T>(string paramName, T paramValue, DbType dbType, int size) {
+            this.command.AddParameter(paramName, paramValue, dbType: dbType, size: size);
+        }
+
 
         private void AddAddress(string name, IPAddress address) {
-            Add(name, address.ToString(), dbType: DbType.AnsiString);
+            this.Add(name, address.ToString(), dbType: DbType.AnsiString, size: 45);
         }
 
         private void AddGrainHash(string name, uint grainHash) {
-            Add(name, (int)grainHash);
+            this.Add(name, (int)grainHash, DbType.Int32);
         }
 
         internal string ClientId {
-            set { Add(nameof(ClientId), value); }
+            set { this.Add(nameof(this.ClientId), value, DbType.AnsiString); }
         }
 
         internal int GatewayPort {
-            set { Add(nameof(GatewayPort), value); }
+            set { this.Add(nameof(this.GatewayPort), value); }
         }
 
         internal IPAddress GatewayAddress {
-            set { AddAddress(nameof(GatewayAddress), value); }
+            set { this.AddAddress(nameof(this.GatewayAddress), value); }
         }
 
         internal string SiloId {
-            set { Add(nameof(SiloId), value); }
+            set { this.Add(nameof(this.SiloId), value); }
         }
 
         internal string Id {
-            set { Add(nameof(Id), value); }
+            set { this.Add(nameof(this.Id), value); }
         }
 
         internal string Name {
-            set { Add(nameof(Name), value); }
+            set { this.Add(nameof(this.Name), value); }
         }
 
         internal const string IsValueDelta = nameof(IsValueDelta);
@@ -252,97 +208,100 @@ internal class DbStoredQueries {
 
         internal SiloAddress SiloAddress {
             set {
-                Address = value.Endpoint.Address;
-                Port = value.Endpoint.Port;
-                Generation = value.Generation;
+                this.Address = value.Endpoint.Address;
+                this.Port = value.Endpoint.Port;
+                this.Generation = value.Generation;
             }
         }
 
         internal int Generation {
-            set { Add(nameof(Generation), value); }
+            set { this.Add(nameof(this.Generation), value); }
         }
 
         internal int Port {
-            set { Add(nameof(Port), value); }
+            set { this.Add(nameof(this.Port), value); }
         }
 
         internal uint BeginHash {
-            set { AddGrainHash(nameof(BeginHash), value); }
+            set { this.AddGrainHash(nameof(this.BeginHash), value); }
         }
 
         internal uint EndHash {
-            set { AddGrainHash(nameof(EndHash), value); }
+            set { this.AddGrainHash(nameof(this.EndHash), value); }
         }
 
         internal uint GrainHash {
-            set { AddGrainHash(nameof(GrainHash), value); }
+            set { this.AddGrainHash(nameof(this.GrainHash), value); }
         }
 
         internal DateTime StartTime {
-            set { Add(nameof(StartTime), value); }
+            set { this.Add(nameof(this.StartTime), value); }
         }
 
         internal IPAddress Address {
-            set { AddAddress(nameof(Address), value); }
+            set { this.AddAddress(nameof(this.Address), value); }
         }
 
         internal string ServiceId {
-            set { Add(nameof(ServiceId), value); }
+            set { this.Add(nameof(this.ServiceId), value, dbType: DbType.String, 150); }
         }
 
         internal string DeploymentId {
-            set { Add(nameof(DeploymentId), value); }
+            set { this.Add(nameof(this.DeploymentId), value, dbType: DbType.String, 150); }
         }
 
         internal string SiloName {
-            set { Add(nameof(SiloName), value); }
+            set { this.Add(nameof(this.SiloName), value, dbType: DbType.String, size: 150); }
         }
 
         internal string HostName {
-            set { Add(nameof(HostName), value); }
+            set { this.Add(nameof(this.HostName), value, dbType: DbType.String, size: 150); }
         }
 
         internal string Version {
-            set { Add(nameof(Version), int.Parse(value)); }
+            set { this.Add(nameof(this.Version), int.Parse(value)); }
         }
 
         internal DateTime IAmAliveTime {
-            set { Add(nameof(IAmAliveTime), value); }
+            set { this.Add(nameof(this.IAmAliveTime), value); }
         }
 
         internal string GrainId {
-            set { Add(nameof(GrainId), value, dbType: DbType.AnsiString); }
+            set { this.Add(nameof(this.GrainId), value, dbType: DbType.AnsiString, size: 150); }
         }
 
         internal string ReminderName {
-            set { Add(nameof(ReminderName), value); }
+            set { this.Add(nameof(this.ReminderName), value, dbType: DbType.String, size: 150); }
         }
 
         internal TimeSpan Period {
             set {
                 if (value.TotalMilliseconds <= int.MaxValue) {
                     // Original casting when old schema is used.  Here to maintain backwards compatibility
-                    Add(nameof(Period), (int)value.TotalMilliseconds);
+                    this.Add(nameof(this.Period), (int)value.TotalMilliseconds);
                 } else {
-                    Add(nameof(Period), (long)value.TotalMilliseconds);
+                    this.Add(nameof(this.Period), (long)value.TotalMilliseconds);
                 }
             }
         }
 
         internal SiloStatus Status {
-            set { Add(nameof(Status), (int)value); }
+            set { this.Add(nameof(this.Status), (int)value); }
         }
 
         internal int ProxyPort {
-            set { Add(nameof(ProxyPort), value); }
+            set { this.Add(nameof(this.ProxyPort), value); }
         }
 
         internal List<Tuple<SiloAddress, DateTime>> SuspectTimes {
             set {
-                Add(nameof(SuspectTimes), value == null
+                this.Add(nameof(this.SuspectTimes),
+                    value == null
                     ? null
                     : string.Join("|", value.Select(
-                        s => $"{s.Item1.ToParsableString()},{LogFormatter.PrintDate(s.Item2)}")));
+                        s => $"{s.Item1.ToParsableString()},{LogFormatter.PrintDate(s.Item2)}")),
+                    dbType: DbType.AnsiString,
+                    size: 8000);
             }
         }
     }

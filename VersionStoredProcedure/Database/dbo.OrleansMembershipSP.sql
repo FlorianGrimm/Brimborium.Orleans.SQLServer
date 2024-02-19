@@ -40,28 +40,7 @@ IF (OBJECT_ID('[dbo].[GatewaysQueryKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[GatewaysQueryKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @DeploymentId nvarchar (4000)
 )
 AS BEGIN 
 
@@ -84,28 +63,16 @@ IF (OBJECT_ID('[dbo].[InsertMembershipKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[InsertMembershipKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+	@DeploymentId nvarchar (4000),
+	@Address varchar (8000),
+	@Port int,
+	@Generation int,
+	@SiloName nvarchar(150),
+	@HostName nvarchar(150),
+	@ProxyPort int,
+	@SuspectTimes varchar (8000),
+	@StartTime datetime2,
+	@IAmAliveTime datetime2
 )
 AS BEGIN 
 
@@ -173,28 +140,7 @@ IF (OBJECT_ID('[dbo].[InsertMembershipVersionKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[InsertMembershipVersionKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @DeploymentId nvarchar (4000)
 )
 AS BEGIN 
 
@@ -223,28 +169,7 @@ IF (OBJECT_ID('[dbo].[MembershipReadAllKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[MembershipReadAllKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @DeploymentId nvarchar (4000)
 )
 AS BEGIN 
 
@@ -275,28 +200,8 @@ IF (OBJECT_ID('[dbo].[MembershipReadRowKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[MembershipReadRowKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @DeploymentId nvarchar (4000),
+    @Address varchar (8000)
 )
 AS BEGIN 
 
@@ -331,28 +236,9 @@ IF (OBJECT_ID('[dbo].[ReadRangeRows1Key]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[ReadRangeRows1Key] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @ServiceId nvarchar (4000),
+    @BeginHash int,
+    @EndHash int
 )
 AS BEGIN 
 
@@ -376,28 +262,9 @@ IF (OBJECT_ID('[dbo].[ReadRangeRows2Key]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[ReadRangeRows2Key] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
+    @ServiceId nvarchar (4000),
+    @BeginHash int,
+    @EndHash int
 )
 AS BEGIN 
 
@@ -412,95 +279,6 @@ AS BEGIN
 		ServiceId = @ServiceId AND @ServiceId IS NOT NULL
 		AND ((GrainHash > @BeginHash AND @BeginHash IS NOT NULL)
 		OR (GrainHash <= @EndHash AND @EndHash IS NOT NULL));
-
-END;
-GO
-
-IF (OBJECT_ID('[dbo].[ReadReminderRowKey]') IS NULL) BEGIN
-  EXECUTE sys.sp_executesql N'CREATE PROCEDURE [dbo].[ReadReminderRowKey] AS BEGIN SET NOCOUNT ON; END;';
-END;
-GO
-ALTER PROCEDURE [dbo].[ReadReminderRowKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
-)
-AS BEGIN 
-
-	SELECT
-		GrainId,
-		ReminderName,
-		StartTime,
-		Period,
-		Version
-	FROM OrleansRemindersTable
-	WHERE
-		ServiceId = @ServiceId AND @ServiceId IS NOT NULL
-		AND GrainId = @GrainId AND @GrainId IS NOT NULL
-		AND ReminderName = @ReminderName AND @ReminderName IS NOT NULL;
-
-END;
-GO
-
-IF (OBJECT_ID('[dbo].[ReadReminderRowsKey]') IS NULL) BEGIN
-  EXECUTE sys.sp_executesql N'CREATE PROCEDURE [dbo].[ReadReminderRowsKey] AS BEGIN SET NOCOUNT ON; END;';
-END;
-GO
-ALTER PROCEDURE [dbo].[ReadReminderRowsKey] (
--- @Address varchar (8000),
--- @DeploymentId nvarchar (4000),
--- @Generation int,
--- @GrainHash int,
--- @GrainId varchar (8000),
--- @GrainIdExtensionString nvarchar (4000),
--- @GrainIdHash int,
--- @GrainIdN0 bigint,
--- @GrainIdN1 bigint,
--- @GrainTypeHash int,
--- @GrainTypeString nvarchar (4000),
--- @IAmAliveTime datetime2,
--- @PayloadBinary varbinary (4000),
--- @Period bigint,
--- @Port int,
--- @ReminderName nvarchar (4000),
--- @ServiceId nvarchar (4000),
--- @StartTime datetime2,
--- @Status int,
--- @SuspectTimes varchar (8000),
--- @Version int,
--- @GrainStateVersion int
-)
-AS BEGIN 
-
-	SELECT
-		GrainId,
-		ReminderName,
-		StartTime,
-		Period,
-		Version
-	FROM OrleansRemindersTable
-	WHERE
-		ServiceId = @ServiceId AND @ServiceId IS NOT NULL
-		AND GrainId = @GrainId AND @GrainId IS NOT NULL;
 
 END;
 GO

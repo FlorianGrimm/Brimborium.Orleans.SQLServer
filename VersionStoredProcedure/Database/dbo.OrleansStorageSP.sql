@@ -49,10 +49,10 @@ ALTER PROCEDURE [dbo].[ReadFromStorageKey] (
     @GrainIdN0 bigint,
     @GrainIdN1 bigint,
     @GrainTypeHash int,
-    @GrainTypeString nvarchar (4000),
-    @GrainIdExtensionString nvarchar (4000),
-    @ServiceId nvarchar (4000),
-    @PayloadBinary varbinary (MAX),
+    @GrainTypeString nvarchar (512),
+    @GrainIdExtensionString nvarchar (512),
+    @ServiceId nvarchar (150),
+    @PayloadBinary varbinary (MAX)
 )
 AS BEGIN 
 -- The application code will deserialize the relevant result. Not that the query optimizer
@@ -83,12 +83,13 @@ IF (OBJECT_ID('[dbo].[WriteToStorageKey]') IS NULL) BEGIN
 END;
 GO
 ALTER PROCEDURE [dbo].[WriteToStorageKey] (
-    @GrainHash int,
+    @GrainIdHash int,
     @GrainIdN0 bigint,
     @GrainIdN1 bigint,
     @GrainTypeHash int,
-    @GrainTypeString nvarchar (4000),
-    @ServiceId nvarchar (4000),
+    @GrainTypeString nvarchar (512),
+	@GrainIdExtensionString nvarchar(512),
+    @ServiceId nvarchar (150),
     @GrainStateVersion int,
     @PayloadBinary varbinary (MAX)
 )

@@ -59,7 +59,7 @@ public class OrleansRelationalDownloadStream : Stream {
         this.ordinal = ordinal;
 
         //This return the total length of the column pointed by the ordinal.
-        this.totalBytes = reader.GetBytes(ordinal, 0, null, 0, 0);
+        totalBytes = reader.GetBytes(ordinal, 0, null, 0, 0);
     }
 
 
@@ -67,7 +67,7 @@ public class OrleansRelationalDownloadStream : Stream {
     /// Can the stream be read.
     /// </summary>
     public override bool CanRead {
-        get { return ((this.reader != null) && (!this.reader.IsClosed)); }
+        get { return ((reader != null) && (!reader.IsClosed)); }
     }
 
 
@@ -102,7 +102,7 @@ public class OrleansRelationalDownloadStream : Stream {
     /// The length of the stream.
     /// </summary>
     public override long Length {
-        get { return this.totalBytes; }
+        get { return totalBytes; }
     }
 
 
@@ -110,7 +110,7 @@ public class OrleansRelationalDownloadStream : Stream {
     /// The current position in the stream.
     /// </summary>
     public override long Position {
-        get { return this.position; }
+        get { return position; }
         set { throw new NotSupportedException(); }
     }
 
@@ -136,11 +136,11 @@ public class OrleansRelationalDownloadStream : Stream {
         ValidateReadParameters(buffer, offset, count);
 
         try {
-            int length = Math.Min(count, (int)(this.totalBytes - this.position));
+            int length = Math.Min(count, (int)(totalBytes - position));
             long bytesRead = 0;
             if (length > 0) {
-                bytesRead = this.reader.GetBytes(this.ordinal, this.position, buffer, offset, length);
-                this.position += bytesRead;
+                bytesRead = reader.GetBytes(ordinal, position, buffer, offset, length);
+                position += bytesRead;
             }
 
             return (int)bytesRead;
@@ -172,8 +172,8 @@ public class OrleansRelationalDownloadStream : Stream {
         try {
             //The last used task is saved in order to avoid one allocation when the number of bytes read
             //will likely be the same multiple times.
-            int bytesRead = this.Read(buffer, offset, count);
-            var ret = this.lastTask != null && bytesRead == this.lastTask.Result ? this.lastTask : (this.lastTask = Task.FromResult(bytesRead));
+            int bytesRead = Read(buffer, offset, count);
+            var ret = lastTask != null && bytesRead == lastTask.Result ? lastTask : (lastTask = Task.FromResult(bytesRead));
 
             return ret;
         } catch (Exception e) {
@@ -197,7 +197,7 @@ public class OrleansRelationalDownloadStream : Stream {
         if (!cancellationToken.IsCancellationRequested) {
             byte[] buffer = new byte[InternalReadBufferLength];
             int bytesRead;
-            while ((bytesRead = this.Read(buffer, 0, buffer.Length)) > 0) {
+            while ((bytesRead = Read(buffer, 0, buffer.Length)) > 0) {
                 if (cancellationToken.IsCancellationRequested) {
                     break;
                 }
@@ -247,7 +247,7 @@ public class OrleansRelationalDownloadStream : Stream {
     /// <param name="disposing">Whether is disposing or not.</param>
     protected override void Dispose(bool disposing) {
         if (disposing) {
-            this.reader = null;
+            reader = null;
         }
 
         base.Dispose(disposing);

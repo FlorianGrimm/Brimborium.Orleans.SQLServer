@@ -25,7 +25,7 @@ internal class RelationalStorage : IRelationalStorage {
     /// </summary>
     public string ConnectionString {
         get {
-            return this._connectionString;
+            return _connectionString;
         }
     }
 
@@ -103,7 +103,7 @@ internal class RelationalStorage : IRelationalStorage {
             throw new ArgumentNullException(nameof(selector));
         }
 
-        return (await this.ExecuteAsync(query, parameterProvider, this.ExecuteReaderAsync, selector, commandBehavior, cancellationToken).ConfigureAwait(false)).Item1;
+        return (await ExecuteAsync(query, parameterProvider, ExecuteReaderAsync, selector, commandBehavior, cancellationToken).ConfigureAwait(false)).Item1;
     }
 
 
@@ -134,7 +134,7 @@ internal class RelationalStorage : IRelationalStorage {
             throw new ArgumentNullException(nameof(query));
         }
 
-        return (await this.ExecuteAsync(query, parameterProvider, this.ExecuteReaderAsync, (unit, id, c) => Task.FromResult(unit), commandBehavior, cancellationToken).ConfigureAwait(false)).Item2;
+        return (await ExecuteAsync(query, parameterProvider, ExecuteReaderAsync, (unit, id, c) => Task.FromResult(unit), commandBehavior, cancellationToken).ConfigureAwait(false)).Item2;
     }
 
     /// <summary>
@@ -185,12 +185,12 @@ internal class RelationalStorage : IRelationalStorage {
         CommandBehavior commandBehavior,
         CancellationToken cancellationToken) {
 
-        using (var connection = new Microsoft.Data.SqlClient.SqlConnection(this._connectionString)) {
+        using (var connection = new Microsoft.Data.SqlClient.SqlConnection(_connectionString)) {
             await connection.OpenAsync(cancellationToken).ConfigureAwait(continueOnCapturedContext: false);
             using (var command = connection.CreateCommand()) {
+                parameterProvider?.Invoke(command);
                 command.CommandText = query;
                 command.CommandType = CommandType.StoredProcedure;
-                parameterProvider?.Invoke(command);
                 Task<Tuple<IEnumerable<TResult>, int>> ret;
                 ret = executor(command, selector, commandBehavior, cancellationToken);
                 return await ret.ConfigureAwait(continueOnCapturedContext: false);

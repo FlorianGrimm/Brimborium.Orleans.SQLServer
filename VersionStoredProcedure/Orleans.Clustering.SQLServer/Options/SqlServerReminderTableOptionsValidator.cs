@@ -13,7 +13,7 @@ public class SqlServerClusteringSiloOptionsValidator : IConfigurationValidator {
     /// <inheritdoc />
     public void ValidateConfiguration() {
         if (string.IsNullOrWhiteSpace(this.options.ConnectionString)) {
-            throw new OrleansConfigurationException($"Invalid {nameof(SqlServerClusteringSiloOptions)} values for {nameof(SqlServerClusteringTable)}. {nameof(options.ConnectionString)} is required.");
+            throw new OrleansConfigurationException($"Invalid {nameof(SqlServerClusteringSiloOptions)} values for {nameof(SqlServerClusteringTable)}. {nameof(this.options.ConnectionString)} is required.");
         }
     }
 }

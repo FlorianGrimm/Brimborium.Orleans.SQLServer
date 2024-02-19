@@ -14,7 +14,7 @@ public class SqlServerGatewayListProvider : IGatewayListProvider
     private readonly ILogger _logger;
     private readonly string _clusterId;
     private readonly SqlServerClusteringClientOptions _options;
-    private RelationalOrleansQueries _orleansQueries;
+    private RelationalOrleansQueriesClustering _orleansQueries;
     private readonly IServiceProvider _serviceProvider;
     private readonly TimeSpan _maxStaleness;
 
@@ -42,22 +42,32 @@ public class SqlServerGatewayListProvider : IGatewayListProvider
         get { return true; }
     }
 
-    public async Task InitializeGatewayListProvider()
+    public Task InitializeGatewayListProvider()
     {
-        if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("SqlServerClusteringTable.InitializeGatewayListProvider called.");
-        _orleansQueries = await RelationalOrleansQueries.CreateInstance(_options.ConnectionString);
+        if (this._logger.IsEnabled(LogLevel.Trace)) {
+            this._logger.LogTrace("SqlServerClusteringTable.InitializeGatewayListProvider called.");
+        }
+
+        this._orleansQueries = RelationalOrleansQueriesClustering.CreateInstance(this._options.ConnectionString);
+        return Task.CompletedTask;
     }
 
     public async Task<IList<Uri>> GetGateways()
     {
-        if (_logger.IsEnabled(LogLevel.Trace)) _logger.LogTrace("SqlServerClusteringTable.GetGateways called.");
+        if (this._logger.IsEnabled(LogLevel.Trace)) {
+            this._logger.LogTrace("SqlServerClusteringTable.GetGateways called.");
+        }
+
         try
         {
-            return await _orleansQueries.ActiveGatewaysAsync(this._clusterId);
+            return await this._orleansQueries.ActiveGatewaysAsync(this._clusterId);
         }
         catch (Exception ex)
         {
-            if (_logger.IsEnabled(LogLevel.Debug)) _logger.LogDebug(ex, "SqlServerClusteringTable.Gateways failed");
+            if (this._logger.IsEnabled(LogLevel.Debug)) {
+                this._logger.LogDebug(ex, "SqlServerClusteringTable.Gateways failed");
+            }
+
             throw;
         }
     }

@@ -3,7 +3,7 @@ namespace Orleans.Runtime.ReminderService;
 internal sealed class SqlServerReminderTable : IReminderTable {
     private readonly SqlServerReminderTableOptions options;
     private readonly string serviceId;
-    private RelationalOrleansQueries orleansQueries;
+    private RelationalOrleansQueriesReminder orleansQueries;
 
     public SqlServerReminderTable(
         IOptions<ClusterOptions> clusterOptions,
@@ -13,7 +13,7 @@ internal sealed class SqlServerReminderTable : IReminderTable {
     }
 
     public async Task Init() {
-        this.orleansQueries = await RelationalOrleansQueries.CreateInstance(this.options.ConnectionString);
+        this.orleansQueries = await RelationalOrleansQueriesReminder.CreateInstance(this.options.ConnectionString);
     }
 
     public Task<ReminderTableData> ReadRows(GrainId grainId) {
